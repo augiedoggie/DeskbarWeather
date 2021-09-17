@@ -210,7 +210,7 @@ OpenWeather::_ParseCurrent(BMessage& data)
 			fCurrent->SetIcon("mist");
 			break;
 		default:
-			fCurrent->SetIcon("unkown");
+			fCurrent->SetIcon("unknown");
 	}
 
 	return B_OK;
@@ -335,7 +335,7 @@ OpenWeather::_ParseDay(BMessage& data)
 			condition->SetIcon("mist");
 			break;
 		default:
-			condition->SetIcon("unkown");
+			condition->SetIcon("unknown");
 	}
 
 	return condition;
