@@ -13,6 +13,7 @@ class BBitmap;
 class BitmapView : public BView {
 public:
 					BitmapView(const char* name, BBitmap* bitmap);
+					~BitmapView();
 
 	virtual void	Draw(BRect updateRect);
 	virtual void	GetPreferredSize(float* width, float* height);

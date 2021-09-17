@@ -15,6 +15,12 @@ BitmapView::BitmapView(const char* name, BBitmap* bitmap)
 }
 
 
+BitmapView::~BitmapView()
+{
+	delete fBitmap;
+}
+
+
 void
 BitmapView::Draw(BRect updateRect)
 {
