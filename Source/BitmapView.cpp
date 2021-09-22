@@ -7,8 +7,9 @@
 
 
 BitmapView::BitmapView(const char* name, BBitmap* bitmap)
-	:	BView(name, B_WILL_DRAW),
-		fBitmap(bitmap)
+	:
+	BView(name, B_WILL_DRAW),
+	fBitmap(bitmap)
 {
 	SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
 	SetDrawingMode(B_OP_ALPHA);

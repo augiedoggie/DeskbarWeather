@@ -29,7 +29,6 @@ main(int /*argc*/, char** /*argv*/)
 		return 1;
 	}
 
-//	result = deskbar.AddItem(new DeskbarWeatherView(), NULL);
 	result = deskbar.AddItem(&info.ref, NULL);
 	if (result != B_OK) {
 		BString errorString("Error adding weather view to deskbar: ");

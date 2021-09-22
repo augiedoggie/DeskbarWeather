@@ -55,7 +55,7 @@ DeskbarWeatherView::DeskbarWeatherView()
 	fMessageRunner(NULL),
 	fWeatherSettings(NULL)
 {
-    _Init();
+	_Init();
 }
 
 
@@ -68,7 +68,7 @@ DeskbarWeatherView::DeskbarWeatherView(BMessage* message)
 	fMessageRunner(NULL),
 	fWeatherSettings(NULL)
 {
-    _Init();
+	_Init();
 }
 
 
@@ -421,9 +421,8 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 	if (fWeather == NULL)
 		refreshItem->SetEnabled(false);
 
-	if ((fWeather == NULL || fWeather->Current() == NULL) && forecastItem != NULL) {
+	if ((fWeather == NULL || fWeather->Current() == NULL) && forecastItem != NULL)
 		forecastItem->SetEnabled(false);
-	}
 
 	popupmenu->SetTargetForItems(this);
 

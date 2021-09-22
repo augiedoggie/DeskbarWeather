@@ -11,9 +11,12 @@
 
 JsonRequestListener::JsonRequestListener(BInvoker* invoker)
 	:
-	fInvoker(invoker) {}
+	fInvoker(invoker)
+{}
 
-void JsonRequestListener::RequestCompleted(BUrlRequest *caller, bool /*success*/)
+
+void
+JsonRequestListener::RequestCompleted(BUrlRequest *caller, bool /*success*/)
 {
 	if (fInvoker == NULL)
 		return;
@@ -39,7 +42,10 @@ void JsonRequestListener::RequestCompleted(BUrlRequest *caller, bool /*success*/
 
 
 JsonRequest::JsonRequest(BUrl& url, BMessage& message)
-	: fUrlRequest(NULL), fReplyMessage(&message), fReplyData(new BMallocIO())
+	:
+	fUrlRequest(NULL),
+	fReplyMessage(&message),
+	fReplyData(new BMallocIO())
 {
 	fUrlRequest = BUrlProtocolRoster::MakeRequest(url, fReplyData);
 }

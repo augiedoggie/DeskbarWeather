@@ -246,10 +246,6 @@ OpenWeather::_ParseForecast(BMessage& data)
 		fCurrent->SetHigh(tempMsg.GetDouble("max", -99));
 	}
 
-//	Condition* condition = _ParseDay(bufMsg);
-//	if (condition != NULL)
-//		fForecastList->AddItem(condition);
-
 	BString dayStr("0");
 	for (int32 idx = 0; data.HasMessage(dayStr); idx++) {
 		dayStr.Truncate(0);

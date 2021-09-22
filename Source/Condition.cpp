@@ -12,8 +12,14 @@
 
 Condition::Condition()
 	:
-	fForecast(new BString()), fHumidity(new BString()), fWind(new BString()), fIcon(new BString("unknown")), fDay(new BString()),
-	fTemp(-999), fLowTemp(-999), fHighTemp(-999)
+	fForecast(new BString()),
+	fHumidity(new BString()),
+	fWind(new BString()),
+	fIcon(new BString("unknown")),
+	fDay(new BString()),
+	fTemp(-999),
+	fLowTemp(-999),
+	fHighTemp(-999)
 {}
 
 
@@ -84,6 +90,7 @@ Condition::iLow()
 {
 	return round(fLowTemp);
 }
+
 
 void
 Condition::SetHigh(double temp)
@@ -165,7 +172,6 @@ Condition::SetDay(const char* day)
 void
 Condition::SetDay(time_t t)
 {
-//	BDateFormat().Format(*fDay, t, B_LONG_DATE_FORMAT);
 	BDateTimeFormat format;
 	format.SetDateTimeFormat(B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT, B_DATE_ELEMENT_WEEKDAY | B_DATE_ELEMENT_MONTH | B_DATE_ELEMENT_DAY);
 	format.Format(*fDay, t, B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT);
