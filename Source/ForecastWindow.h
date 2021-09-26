@@ -16,10 +16,10 @@ class OpenWeather;
 class ForecastWindow : public BWindow {
 
 public:
-		ForecastWindow(OpenWeather* weather, BRect frame, const char* location);
+		ForecastWindow(OpenWeather* weather, BRect frame, const char* location, bool compact);
 
 private:
-		BBitmap*		_LoadBitmap(const char* name);
+		BBitmap*		_LoadBitmap(const char* name, int32 size);
 		BStringView*	_BuildStringView(const char* name, const char* label, alignment align, BFont* font = NULL);
 };
 

@@ -33,6 +33,8 @@ public:
 	bool		UseNotification();
 	status_t	SetFont(const char* family, const char* style, double size);
 	status_t	GetFont(BFont& font);
+	void		SetCompactForecast(bool enabled);
+	bool		CompactForecast();
 };
 
 #endif	// _WEATHERSETTINGS_H_

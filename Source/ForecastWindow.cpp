@@ -16,7 +16,7 @@
 #include <StringView.h>
 
 
-ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* location)
+ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* location, bool compact)
 	:
 	BWindow(frame, location, B_FLOATING_WINDOW_LOOK, B_MODAL_APP_WINDOW_FEEL,
 			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE)
@@ -40,11 +40,11 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 	BGridLayout* tempGrid;
 	BGridLayout* otherGrid;
 
-	BGroupView* currentView = new BGroupView(B_HORIZONTAL, 10);
-	BLayoutBuilder::Group<>(currentView, B_HORIZONTAL, B_USE_BIG_SPACING)
-		.SetInsets(B_USE_BIG_INSETS)
+	BGroupView* currentView = new BGroupView(B_HORIZONTAL, compact ? 0 : B_USE_BIG_SPACING);
+	BLayoutBuilder::Group<>(currentView, B_HORIZONTAL, compact ? 0 : B_USE_BIG_SPACING)
+		.SetInsets(compact ? 0 : B_USE_BIG_INSETS)
 		.AddGlue()
-		.AddGroup(B_VERTICAL)
+		.AddGroup(B_VERTICAL, compact ? 0 : B_USE_DEFAULT_SPACING)
 			.AddGlue()
 			.AddGroup(B_HORIZONTAL)
 				.AddGlue()
@@ -53,7 +53,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			.End()
 			.AddGroup(B_HORIZONTAL)
 				.AddGlue()
-				.Add(new BitmapView("ConditionBitmap", _LoadBitmap(weather->Current()->Icon()->String())), 0)
+				.Add(new BitmapView("ConditionBitmap", _LoadBitmap(weather->Current()->Icon()->String(), compact ? 47 : 63)), 0)
 				.AddGlue()
 			.End()
 			.AddGroup(B_HORIZONTAL)
@@ -65,7 +65,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 		.End()
 //		.AddStrut(B_USE_BIG_SPACING)
 		.AddGlue()
-		.Add(tempGrid = BLayoutBuilder::Grid<>(B_USE_HALF_ITEM_SPACING, B_USE_BIG_SPACING)
+		.Add(tempGrid = BLayoutBuilder::Grid<>(B_USE_HALF_ITEM_SPACING, compact ? 0 : B_USE_BIG_SPACING)
 			.Add(_BuildStringView("CurrentLabel", "Current:", B_ALIGN_RIGHT, &bigFont), 0, 0)
 			.Add(_BuildStringView("CurrentString", currentString.String(), B_ALIGN_LEFT, &bigFont), 1, 0)
 			.Add(_BuildStringView("HighLabel", "High:", B_ALIGN_RIGHT, &bigFont), 0, 1)
@@ -76,7 +76,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 		)
 //		.AddStrut(B_USE_BIG_SPACING)
 		.AddGlue()
-		.Add(otherGrid = BLayoutBuilder::Grid<>(B_USE_HALF_ITEM_SPACING, B_USE_BIG_SPACING)
+		.Add(otherGrid = BLayoutBuilder::Grid<>(B_USE_HALF_ITEM_SPACING, compact ? 0 : B_USE_BIG_SPACING)
 			.Add(_BuildStringView("HumidityLabel", "Humidity:", B_ALIGN_RIGHT, &bigFont), 0, 0)
 			.Add(_BuildStringView("HumidityString", weather->Current()->Humidity()->String(), B_ALIGN_LEFT, &bigFont), 1, 0)
 			.Add(_BuildStringView("WindLabel", "Wind:", B_ALIGN_RIGHT, &bigFont), 0, 1)
@@ -87,7 +87,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 
 	otherGrid->AlignLayoutWith(tempGrid, B_VERTICAL);
 
-	BGroupView* forecastView = new BGroupView(B_HORIZONTAL);
+	BGroupView* forecastView = new BGroupView(B_HORIZONTAL, compact ? 0 : B_USE_DEFAULT_SPACING);
 	BLayoutBuilder::Group<> forecastBuilder = BLayoutBuilder::Group<>(forecastView);
 
 	BObjectList<Condition>* forecastList = weather->Forecast();
@@ -101,23 +101,23 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 		highString << condition->iHigh() << "°";
 
 		forecastBuilder
-			.AddGroup(B_VERTICAL)
-				.AddGroup(B_HORIZONTAL)
+			.AddGroup(B_VERTICAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
+				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
 					.AddGlue()
 					.Add(new BStringView("DateString", condition->Day()->String()))
 					.AddGlue()
 				.End()
-				.AddGroup(B_HORIZONTAL)
+				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
 					.AddGlue()
-					.Add(new BitmapView("ConditionBitmap", _LoadBitmap(condition->Icon()->String())), 0)
+					.Add(new BitmapView("ConditionBitmap", _LoadBitmap(condition->Icon()->String(), compact ? 35 : 47)), 0)
 					.AddGlue()
 				.End()
-				.AddGroup(B_HORIZONTAL)
+				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
 					.AddGlue()
 					.Add(new BStringView("ConditionString", condition->Forecast()->String()))
 					.AddGlue()
 				.End()
-				.AddGroup(B_HORIZONTAL)
+				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
 					.AddGlue()
 					.AddGrid(B_USE_HALF_ITEM_SPACING, 0.0)
 						.Add(_BuildStringView("HighLabel", "High:", B_ALIGN_RIGHT), 0, 0)
@@ -137,7 +137,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			forecastBuilder.Add(separatorView);
 		}
 	}
-	forecastBuilder.SetInsets(B_USE_ITEM_INSETS);
+	forecastBuilder.SetInsets(compact ? 0 : B_USE_ITEM_INSETS);
 
 	BBox* currentBox = new BBox("CurrentBBox");
 	BString boxLabel("Current conditions updated: ");
@@ -179,9 +179,9 @@ ForecastWindow::_BuildStringView(const char* name, const char* label, alignment 
 
 
 BBitmap*
-ForecastWindow::_LoadBitmap(const char* name)
+ForecastWindow::_LoadBitmap(const char* name, int32 size)
 {
-	BBitmap* bitmap = new BBitmap(BRect(0, 0, 47, 47), B_RGBA32);
+	BBitmap* bitmap = new BBitmap(BRect(0, 0, size, size), B_RGBA32);
 
 	image_info image;
 	if (DeskbarWeatherView::GetAppImage(image) != B_OK)
@@ -193,10 +193,10 @@ ForecastWindow::_LoadBitmap(const char* name)
 
 	BResources resources(&file);
 
-	size_t size;
-	const void* data = resources.LoadResource(B_VECTOR_ICON_TYPE, name, &size);
+	size_t datasize;
+	const void* data = resources.LoadResource(B_VECTOR_ICON_TYPE, name, &datasize);
 	if (data != NULL)
-		BIconUtils::GetVectorIcon((const uint8*)data, size, bitmap);
+		BIconUtils::GetVectorIcon((const uint8*)data, datasize, bitmap);
 
 	return bitmap;
 }

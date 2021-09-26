@@ -40,6 +40,7 @@ private:
 	BTextControl*		fLocationControl;
 	BCheckBox*			fLocationBox;
 	BCheckBox*			fNotificationBox;
+	BCheckBox*			fCompactBox;
 	BMenuField*			fIntervalMenuField;
 
 };

@@ -22,7 +22,8 @@ enum {
 	kMetricMessage					= 'DwMm',
 	kNotificationCheckboxMessage	= 'GcNo',
 	kRevertButtonMessage			= 'GcRv',
-	kSaveButtonMessage				= 'GcSv'
+	kSaveButtonMessage				= 'GcSv',
+	kCompactCheckboxMessage			= 'DwCc'
 };
 
 
@@ -30,15 +31,16 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 	:
 	BWindow(frame, "Weather Settings", B_FLOATING_WINDOW_LOOK, B_MODAL_APP_WINDOW_FEEL,
 			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
-	fWeatherSettings(prefs),
-	fWeatherSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*prefs))),
-	fInvoker(invoker),
-	fMetricButton(NULL),
+	fCompactBox(NULL),
 	fImperialButton(NULL),
-	fLocationControl(NULL),
+	fIntervalMenuField(NULL),
+	fInvoker(invoker),
 	fLocationBox(NULL),
+	fLocationControl(NULL),
+	fMetricButton(NULL),
 	fNotificationBox(NULL),
-	fIntervalMenuField(NULL)
+	fWeatherSettings(prefs),
+	fWeatherSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*prefs)))
 {
 	BTextControl* apiControl = new BTextControl("ApiKeyControl", "API Key:", fWeatherSettings->ApiKey(), NULL);
 	apiControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
@@ -68,28 +70,31 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 
 	fNotificationBox = new BCheckBox("NotificationCheckBox", "Show notification after update", new BMessage(kNotificationCheckboxMessage));
 
+	fCompactBox = new BCheckBox("CompactForecastBox", "Use compact forecast window", new BMessage(kCompactCheckboxMessage));
+
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddGrid(0.0, B_USE_HALF_ITEM_INSETS)
 			.AddTextControl(apiControl, 0, 0, B_ALIGN_RIGHT)
 			.AddMenuField(fIntervalMenuField, 0, 1, B_ALIGN_RIGHT)
-			.AddTextControl(fLocationControl, 0, 2, B_ALIGN_RIGHT)
-			.Add(fLocationBox, 1, 3)
+			.Add(fNotificationBox, 1, 2)
+			.AddTextControl(fLocationControl, 0, 3, B_ALIGN_RIGHT)
+			.Add(fLocationBox, 1, 4)
 //			.Add(BSpaceLayoutItem::CreateGlue(), 0, 4, 1, 1)
-			.AddGroup(B_HORIZONTAL, 0.0, 0, 4, 1, 1)
+			.AddGroup(B_HORIZONTAL, 0.0, 0, 5, 1, 1)
 				.SetExplicitAlignment(BAlignment(B_ALIGN_RIGHT, B_ALIGN_MIDDLE))
 				.Add(unitsView)
 				.AddStrut(be_control_look->DefaultLabelSpacing())
 			.End()
-			.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING, 1, 4, 1, 1)
+			.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING, 1, 5, 1, 1)
 				.SetExplicitAlignment(BAlignment(B_ALIGN_LEFT, B_ALIGN_TOP))
 				.Add(fImperialButton)
 				.AddStrut(be_control_look->DefaultItemSpacing())
 				.Add(fMetricButton)
 			.End()
-			.AddMenuField(fontMenuField, 0, 5, B_ALIGN_RIGHT)
+			.AddMenuField(fontMenuField, 0, 6, B_ALIGN_RIGHT)
+			.Add(fCompactBox, 1, 7)
 //			.Add(BSpaceLayoutItem::CreateGlue(), 2, 0, 1, 5)
-			.Add(fNotificationBox, 1, 6)
 		.End()
 		.AddGlue()
 		.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING)
@@ -129,6 +134,17 @@ SettingsWindow::MessageReceived(BMessage* message)
 				fInvoker->Invoke();
 			}
 			break;
+		case kCompactCheckboxMessage:
+		{
+			int32 value = message->GetInt32("be:value", -1);
+			if (value == -1)
+				break;
+
+			if (fWeatherSettings->CompactForecast() != value)
+				fWeatherSettings->SetCompactForecast(value);
+
+			break;
+		}
 		case kGeoCheckboxMessage:
 		{
 			BCheckBox* useGeoCheckbox = dynamic_cast<BCheckBox*>(FindView("GeoLocationCheckBox"));
@@ -215,6 +231,9 @@ SettingsWindow::_InitControls(bool revert)
 	if (selectedItem != NULL)
 		selectedItem->SetMarked(true);
 	//TODO show error?
+
+	if (fWeatherSettings->CompactForecast())
+		fCompactBox->SetValue(1);
 
 //	if (revert)
 	//TODO send settings change message

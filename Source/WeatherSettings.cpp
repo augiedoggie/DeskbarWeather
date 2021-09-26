@@ -22,6 +22,7 @@ const char* kLongitudeKey = "dw:Longitude";
 const char* kFontFamilyKey = "dw:FontFamily";
 const char* kFontStyleKey = "dw:FontStyle";
 const char* kFontSizeKey = "dw:FontSize";
+const char* kCompactForecastKey = "dw:CompactForecast";
 
 const char* kDefaultLocation = "Rapa Nui";
 const double kDefaultLatitude = -27.116667;
@@ -31,6 +32,7 @@ const int32 kDefaultInterval = 10;
 const bool kImperialDefaultUnit = true;
 const bool kUseGeoLocationDefault = true;
 const bool kUseNotificationDefault = true;
+const bool kCompactForecastDefault = false;
 
 
 WeatherSettings::WeatherSettings()
@@ -63,6 +65,20 @@ WeatherSettings::~WeatherSettings()
 		return;
 
 	Flatten(&prefsFile);
+}
+
+
+bool
+WeatherSettings::CompactForecast()
+{
+	return GetBool(kCompactForecastKey, kCompactForecastDefault);
+}
+
+
+void
+WeatherSettings::SetCompactForecast(bool enabled)
+{
+	SetBool(kCompactForecastKey, enabled);
 }
 
 

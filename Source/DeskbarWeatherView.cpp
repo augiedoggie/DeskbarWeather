@@ -282,7 +282,7 @@ DeskbarWeatherView::_ShowForecastWindow()
 {
 	//TODO check for existing window and activate it
 	if (fWeather->Current() != NULL)
-		new ForecastWindow(fWeather, BRect(100, 100, 500, 300), fWeatherSettings->Location());
+		new ForecastWindow(fWeather, BRect(100, 100, 500, 300), fWeatherSettings->Location(), fWeatherSettings->CompactForecast());
 }
 
 
