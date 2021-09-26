@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(DBWEATHER)
+project(DeskbarWeather)
 
-set(CMAKE_MODULE_PATH ${DBWEATHER_SOURCE_DIR}/CMakeModules)
+set(CMAKE_MODULE_PATH ${DeskbarWeather_SOURCE_DIR}/CMakeModules)
 
 include(UseHaiku)
 
-#set(DBWEATHER_BUILD_DIR ${DBWEATHER_BINARY_DIR}/build)
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DBWEATHER_BUILD_DIR})
+#set(DeskbarWeather_BUILD_DIR ${DeskbarWeather_BINARY_DIR}/build)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DeskbarWeather_BUILD_DIR})
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DBWEATHER_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DeskbarWeather_BINARY_DIR})
 
 option(USE_CLANG "Enable building with clang instead of gcc" OFF)
 if(USE_CLANG)
