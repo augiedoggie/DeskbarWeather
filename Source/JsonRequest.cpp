@@ -33,7 +33,7 @@ JsonRequestListener::RequestCompleted(BUrlRequest *caller, bool /*success*/)
 			return; // TODO reset re:code and re:message ?
 
 		BPrivate::BJson::Parse(static_cast<const char*>(data->Buffer()), replyCopy);
-		delete data;
+		data->SetSize(0);
 	}
 
 	replyCopy.what = fInvoker->Message()->what; // reset ->what after BJson::Parse() messed with it
