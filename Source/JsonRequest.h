@@ -4,7 +4,6 @@
 #ifndef _JSONREQUEST_H_
 #define _JSONREQUEST_H_
 
-#include <SupportDefs.h>
 #include <private/netservices/UrlProtocolListener.h>
 
 namespace BPrivate {
@@ -14,8 +13,6 @@ namespace BPrivate {
 }
 class BInvoker;
 class BMallocIO;
-class BMessage;
-class BUrl;
 
 using namespace BPrivate::Network;
 
@@ -27,20 +24,5 @@ public:
 private:
 			BInvoker*	fInvoker;
 };
-
-
-class JsonRequest {
-public:
-	virtual				~JsonRequest();
-	static	status_t	Run(BUrl& url, BMessage& reply);
-private:
-						JsonRequest(BUrl& url, BMessage& reply);
-			status_t	_Run();
-
-		BUrlRequest*	fUrlRequest;
-		BMessage*		fReplyMessage;
-		BMallocIO*		fReplyData;
-};
-
 
 #endif	// _JSONREQUEST_H_
