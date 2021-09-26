@@ -13,6 +13,13 @@ class BInvoker;
 class BMessage;
 class BString;
 class BUrl;
+namespace BPrivate {
+	namespace Network {
+		class BUrlRequest;
+	}
+}
+
+using namespace BPrivate::Network;
 
 class WeatherSettings;
 
@@ -48,6 +55,7 @@ private:
 	WeatherSettings*		fWeatherSettings;
 	time_t					fLastUpdateTime;
 	BUrl*					fOneUrl;
+	BUrlRequest*			fUrlRequest;
 };
 
 

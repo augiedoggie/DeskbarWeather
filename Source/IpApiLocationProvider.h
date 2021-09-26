@@ -10,6 +10,13 @@ class WeatherSettings;
 
 class BInvoker;
 class BMessage;
+namespace BPrivate {
+	namespace Network {
+		class BUrlRequest;
+	}
+}
+
+using namespace BPrivate::Network;
 
 
 class IpApiLocationProvider {
@@ -26,6 +33,7 @@ private:
 
 		BInvoker*			fInvoker;
 		WeatherSettings*	fWeatherSettings;
+		BUrlRequest*		fUrlRequest;
 };
 
 #endif	// _IPAPILOCATIONPROVIDER_H_

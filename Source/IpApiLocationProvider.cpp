@@ -5,34 +5,36 @@
 #include "JsonRequest.h"
 #include "WeatherSettings.h"
 
-#include <AutoDeleter.h>
 #include <File.h>
 #include <FindDirectory.h>
 #include <Invoker.h>
-#include <Message.h>
-#include <private/netservices/HttpRequest.h>
-#include <private/netservices/HttpResult.h>
 #include <private/netservices/UrlProtocolRoster.h>
 #include <private/netservices/UrlRequest.h>
-#include <private/shared/Json.h>
-
-
-using namespace BPrivate;
-using namespace BPrivate::Network;
 
 
 const char* kGeoLookupCacheKey = "dw:GeoLookupCache";
+
+const char* kIpApiUrl = "http://ip-api.com/json/?fields=status,message,lat,lon,country,regionName,city";
 
 
 IpApiLocationProvider::IpApiLocationProvider(WeatherSettings* settings, BInvoker* invoker)
 	:
 	fInvoker(invoker),
+	fUrlRequest(NULL),
 	fWeatherSettings(settings)
 {}
 
 
 IpApiLocationProvider::~IpApiLocationProvider()
 {
+	if (fUrlRequest != NULL) {
+		if (fUrlRequest->IsRunning())
+			fUrlRequest->Stop();
+
+		delete dynamic_cast<BMallocIO*>(fUrlRequest->Output());
+		delete dynamic_cast<JsonRequestListener*>(fUrlRequest->Listener());
+	}
+	delete fUrlRequest;
 	delete fInvoker;
 }
 
@@ -49,10 +51,13 @@ IpApiLocationProvider::Run()
 		return fInvoker->Invoke(&geoMsg);
 	}
 
-	//TODO fix leak
-	BUrl url("http://ip-api.com/json/?fields=status,message,lat,lon,country,regionName,city");
-	BUrlRequest* request = BUrlProtocolRoster::MakeRequest(url, new BMallocIO(), new JsonRequestListener(fInvoker));
-	return request->Run() < B_OK ? B_ERROR : B_OK;
+	BUrl url(kIpApiUrl);
+	if (fUrlRequest == NULL)
+		fUrlRequest = BUrlProtocolRoster::MakeRequest(url, new BMallocIO(), new JsonRequestListener(fInvoker));
+	else if (fUrlRequest->IsRunning())
+		return B_ERROR; //TODO stop and restart?
+
+	return fUrlRequest->Run() < B_OK ? B_ERROR : B_OK;
 }
 
 

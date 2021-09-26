@@ -6,34 +6,28 @@
 #include "JsonRequest.h"
 #include "WeatherSettings.h"
 
-#include <Alert.h>
-#include <AutoDeleter.h>
 #include <DateTimeFormat.h>
 #include <File.h>
 #include <FindDirectory.h>
 #include <Invoker.h>
-#include <String.h>
-#include <private/netservices/HttpRequest.h>
-#include <private/netservices/HttpResult.h>
 #include <private/netservices/UrlProtocolRoster.h>
 #include <private/netservices/UrlRequest.h>
-#include <private/shared/Json.h>
 
 
-using namespace BPrivate;
-using namespace BPrivate::Network;
+const char* kOpenWeatherUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=%f&lon=%f&exclude=minutely,hourly&units=%s&appid=%s";
 
 
 OpenWeather::OpenWeather(WeatherSettings* settings, BInvoker* invoker)
 	:
-	fGeoMessage(new BMessage()),
-	fOpenWeatherMessage(new BMessage()),
 	fCurrent(NULL),
 	fForecastList(NULL),
+	fGeoMessage(new BMessage()),
 	fInvoker(invoker),
-	fWeatherSettings(settings),
 	fLastUpdateTime(-1),
-	fOneUrl(NULL)
+	fOneUrl(NULL),
+	fOpenWeatherMessage(new BMessage()),
+	fUrlRequest(NULL),
+	fWeatherSettings(settings)
 {
 	RebuildRequestUrl();
 }
@@ -41,6 +35,14 @@ OpenWeather::OpenWeather(WeatherSettings* settings, BInvoker* invoker)
 
 OpenWeather::~OpenWeather()
 {
+	if (fUrlRequest != NULL) {
+		if (fUrlRequest->IsRunning())
+			fUrlRequest->Stop();
+
+		delete dynamic_cast<BMallocIO*>(fUrlRequest->Output());
+		delete dynamic_cast<JsonRequestListener*>(fUrlRequest->Listener());
+	}
+	delete fUrlRequest;
 	delete fCurrent;
 	delete fForecastList;
 	delete fGeoMessage;
@@ -53,8 +55,6 @@ OpenWeather::~OpenWeather()
 void
 OpenWeather::RebuildRequestUrl()
 {
-	const char* weatherUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=%f&lon=%f&exclude=minutely,hourly&units=%s&appid=%s";
-
 	if (fWeatherSettings->ApiKey() == NULL)
 		return;
 
@@ -62,7 +62,7 @@ OpenWeather::RebuildRequestUrl()
 
 	bool needRefresh = false;
 	BString urlStr;
-	urlStr.SetToFormat(weatherUrl, fWeatherSettings->Latitude(), fWeatherSettings->Longitude(),
+	urlStr.SetToFormat(kOpenWeatherUrl, fWeatherSettings->Latitude(), fWeatherSettings->Longitude(),
 					   fWeatherSettings->ImperialUnits() ? "imperial" : "metric", fWeatherSettings->ApiKey());
 
 	if (fOneUrl != NULL) {
@@ -74,6 +74,12 @@ OpenWeather::RebuildRequestUrl()
 	}
 
 	fOneUrl = new BUrl(urlStr);
+
+	if (fUrlRequest == NULL)
+		fUrlRequest = BUrlProtocolRoster::MakeRequest(*fOneUrl, new BMallocIO(), new JsonRequestListener(fInvoker));
+	else
+		fUrlRequest->SetUrl(*fOneUrl);
+
 	if (needRefresh)
 		Refresh();
 }
@@ -82,9 +88,10 @@ OpenWeather::RebuildRequestUrl()
 status_t
 OpenWeather::Refresh()
 {
-	//TODO fix leak
-	BUrlRequest* request = BUrlProtocolRoster::MakeRequest(*fOneUrl, new BMallocIO(), new JsonRequestListener(fInvoker));
-	return request->Run() < B_OK ? B_ERROR : B_OK;
+	if (fUrlRequest->IsRunning())
+		return B_ERROR; //TODO stop and restart?
+
+	return fUrlRequest->Run() < B_OK ? B_ERROR : B_OK;
 }
 
 
