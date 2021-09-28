@@ -340,7 +340,16 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 			notification.SetContent(content);
 			notification.Send();
 		}
-		fWeather->ParseResult(*message);
+		if (fWeather->ParseResult(*message) != B_OK) {
+			//always send bad notification
+			BNotification notification(B_ERROR_NOTIFICATION);
+			notification.SetGroup("DeskbarWeather");
+			notification.SetTitle("Json Parse Error");
+			//TODO add a more descriptive error message
+			BString content("There was an error parsing the returned weather data!");
+			notification.SetContent(content);
+			notification.Send();
+		}
 	} else {
 		//always send bad notification
 		BNotification notification(B_ERROR_NOTIFICATION);
