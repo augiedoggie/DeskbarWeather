@@ -16,6 +16,9 @@ namespace BPrivate {
 	}
 }
 
+static const char* kGeoLookupCacheKey = "dw:GeoLookupCache";
+
+
 using namespace BPrivate::Network;
 
 
@@ -24,7 +27,7 @@ public:
 							IpApiLocationProvider(WeatherSettings* settings, BInvoker* invoker);
 							~IpApiLocationProvider();
 
-			status_t		Run();
+			status_t		Run(bool force = false);
 			status_t		ParseResult(BMessage& data, bool cacheResult = true);
 
 private:

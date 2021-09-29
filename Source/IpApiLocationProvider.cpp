@@ -12,8 +12,6 @@
 #include <private/netservices/UrlRequest.h>
 
 
-const char* kGeoLookupCacheKey = "dw:GeoLookupCache";
-
 const char* kIpApiUrl = "http://ip-api.com/json/?fields=status,message,lat,lon,country,regionName,city";
 
 
@@ -40,16 +38,21 @@ IpApiLocationProvider::~IpApiLocationProvider()
 
 
 status_t
-IpApiLocationProvider::Run()
+IpApiLocationProvider::Run(bool force)
 {
 	BMessage geoMsg;
-	//TODO check if cache needs to be invalidated and a new lookup performed
-	if (_LoadCache(geoMsg) == B_OK) {
-		if (ParseResult(geoMsg, false) != B_OK)
-			return B_ERROR;
 
-		//TODO add bool to mark the result as cached?
-		return fInvoker->Invoke(&geoMsg);
+	//TODO check if cache needs to be invalidated and a new lookup performed
+	if (!force) {
+		if (_LoadCache(geoMsg) == B_OK) {
+			if (ParseResult(geoMsg, false) != B_OK)
+				return B_ERROR;
+
+			if (!geoMsg.HasBool(kGeoLookupCacheKey))
+				geoMsg.AddBool(kGeoLookupCacheKey, true);
+
+			return fInvoker->Invoke(&geoMsg);
+		}
 	}
 
 	BUrl url(kIpApiUrl);
