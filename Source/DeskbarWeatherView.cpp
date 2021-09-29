@@ -332,17 +332,6 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	BString response(message->GetString("re:message", "BMessage Error"));
 
 	if (BHttpRequest::IsSuccessStatusCode(status)) {
-		if (fWeatherSettings->UseNotification()) {
-			//send good notification if they're enabled
-			BNotification notification(B_INFORMATION_NOTIFICATION);
-			notification.SetGroup("DeskbarWeather");
-			notification.SetTitle("Weather Refresh Complete");
-			BString content("Response: ");
-			content << response;
-			//TODO add more content(current conditions, temp, etc...)
-			notification.SetContent(content);
-			notification.Send();
-		}
 		if (fWeather->ParseResult(*message) != B_OK) {
 			//always send bad notification
 			BNotification notification(B_ERROR_NOTIFICATION);
@@ -350,6 +339,16 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 			notification.SetTitle("Json Parse Error");
 			//TODO add a more descriptive error message
 			BString content("There was an error parsing the returned weather data!");
+			notification.SetContent(content);
+			notification.Send();
+		} else if (fWeatherSettings->UseNotification()) {
+			//send good notification if they're enabled
+			BNotification notification(B_INFORMATION_NOTIFICATION);
+			notification.SetGroup("DeskbarWeather");
+			notification.SetTitle("Weather Refresh Complete");
+			BString content(fWeatherSettings->Location());
+			//TODO configurable notification information
+			content << ": " << fWeather->Current()->Temp() << "°\n\n" << fWeather->Current()->Forecast()->String();
 			notification.SetContent(content);
 			notification.Send();
 		}
