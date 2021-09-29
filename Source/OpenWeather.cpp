@@ -39,8 +39,8 @@ OpenWeather::~OpenWeather()
 		if (fUrlRequest->IsRunning())
 			fUrlRequest->Stop();
 
-		delete dynamic_cast<BMallocIO*>(fUrlRequest->Output());
-		delete dynamic_cast<JsonRequestListener*>(fUrlRequest->Listener());
+		delete fUrlRequest->Output();
+		delete fUrlRequest->Listener();
 	}
 	delete fUrlRequest;
 	delete fCurrent;

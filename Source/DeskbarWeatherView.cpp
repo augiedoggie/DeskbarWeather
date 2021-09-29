@@ -49,10 +49,10 @@ extern "C" _EXPORT BView* instantiate_deskbar_item(void)
 DeskbarWeatherView::DeskbarWeatherView()
 	:
 	BView(BRect(0, 0, 39, 15), kViewName, B_FOLLOW_NONE, B_WILL_DRAW),
-	fLocationProvider(NULL),
-	fWeather(NULL),
 	fIcon(NULL),
+	fLocationProvider(NULL),
 	fMessageRunner(NULL),
+	fWeather(NULL),
 	fWeatherSettings(NULL)
 {
 	_Init();
@@ -62,10 +62,10 @@ DeskbarWeatherView::DeskbarWeatherView()
 DeskbarWeatherView::DeskbarWeatherView(BMessage* message)
 	:
 	BView(message),
-	fLocationProvider(NULL),
-	fWeather(NULL),
 	fIcon(NULL),
+	fLocationProvider(NULL),
 	fMessageRunner(NULL),
+	fWeather(NULL),
 	fWeatherSettings(NULL)
 {
 	_Init();
@@ -120,7 +120,7 @@ DeskbarWeatherView::AttachedToWindow()
 
 	if (fWeatherSettings->UseGeoLocation()) {
 		fLocationProvider = new IpApiLocationProvider(fWeatherSettings, new BInvoker(new BMessage(kGeoLocationMessage), this));
-		fLocationProvider->Run(); // will force a weather refresh when the message arrives
+		fLocationProvider->Run(); // will force a weather refresh when the reply message arrives
 	} else
 		BMessenger(this).SendMessage(kForceRefreshMessage);
 }
@@ -199,6 +199,7 @@ DeskbarWeatherView::Draw(BRect updateRect)
 		SetHighColor(origColor);
 	}
 
+	//TODO move this out of Draw() and only update it when the font actually changes
 	BFont font;
 	fWeatherSettings->GetFont(font);
 	SetFont(&font);
@@ -211,7 +212,7 @@ DeskbarWeatherView::Draw(BRect updateRect)
 	MovePenTo(17, textY + 1);
 
 	BString tempString;
-	//TODO allow decimal display in celsius mode
+	//TODO fix text being cut off during decimal display in celsius mode
 	if (fWeather != NULL && fWeather->Current() != NULL)
 		if (fWeatherSettings->ImperialUnits())
 			tempString << fWeather->Current()->iTemp() << "°";
@@ -271,6 +272,7 @@ DeskbarWeatherView::_CheckMessageRunner()
 
 	delete fMessageRunner;
 	fMessageRunner = NULL;
+	//TODO use notification instead?
 	(new BAlert("Error", "MessageRunner Error!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 
 	return B_ERROR;
@@ -337,6 +339,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 			notification.SetTitle("Weather Refresh Complete");
 			BString content("Response: ");
 			content << response;
+			//TODO add more content(current conditions, temp, etc...)
 			notification.SetContent(content);
 			notification.Send();
 		}
@@ -390,6 +393,7 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		notification.Send();
 		return;
 	}
+	//TODO add setting to show geolookup results notification on success(lat, lon, city, etc...)
 
 	if (fLocationProvider->ParseResult(*message) == B_OK)
 		_ForceRefresh();
@@ -461,5 +465,4 @@ DeskbarWeatherView::_LoadIcon(const char* name)
 	const uint8* data = static_cast<const uint8*>(resources.LoadResource(B_VECTOR_ICON_TYPE, name, &size));
 	if (data != NULL)
 		BIconUtils::GetVectorIcon(data, size, fIcon);
-
 }

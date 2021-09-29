@@ -31,8 +31,8 @@ IpApiLocationProvider::~IpApiLocationProvider()
 		if (fUrlRequest->IsRunning())
 			fUrlRequest->Stop();
 
-		delete dynamic_cast<BMallocIO*>(fUrlRequest->Output());
-		delete dynamic_cast<JsonRequestListener*>(fUrlRequest->Listener());
+		delete fUrlRequest->Output();
+		delete fUrlRequest->Listener();
 	}
 	delete fUrlRequest;
 	delete fInvoker;
@@ -43,6 +43,7 @@ status_t
 IpApiLocationProvider::Run()
 {
 	BMessage geoMsg;
+	//TODO check if cache needs to be invalidated and a new lookup performed
 	if (_LoadCache(geoMsg) == B_OK) {
 		if (ParseResult(geoMsg, false) != B_OK)
 			return B_ERROR;
