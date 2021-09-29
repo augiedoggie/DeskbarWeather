@@ -160,6 +160,10 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			fWeather->RebuildRequestUrl();
 			_CheckMessageRunner();
 			//TODO check for geolocation status change
+			//TODO only reset the font it it actually changes
+			BFont font;
+			fWeatherSettings->GetFont(font);
+			SetFont(&font);
 //			_ForceRefresh();
 			Invalidate();
 			break;
@@ -198,11 +202,6 @@ DeskbarWeatherView::Draw(BRect updateRect)
 		FillRect(iconRect);
 		SetHighColor(origColor);
 	}
-
-	//TODO move this out of Draw() and only update it when the font actually changes
-	BFont font;
-	fWeatherSettings->GetFont(font);
-	SetFont(&font);
 
 	font_height fontHeight;
 	GetFontHeight(&fontHeight);
