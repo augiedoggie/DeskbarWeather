@@ -354,7 +354,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 			notification.SetTitle("Weather Refresh Complete");
 			BString content(fWeatherSettings->Location());
 			//TODO configurable notification information
-			content << ": " << fWeather->Current()->Temp() << "°\n\n" << fWeather->Current()->Forecast()->String();
+			content << "\n\n" << fWeather->Current()->Forecast()->String() << "\n\n" << fWeather->Current()->Temp() << "°";
 			notification.SetContent(content);
 			notification.Send();
 		}
@@ -372,9 +372,12 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 
 	BString updateStr;
 	fWeather->LastUpdate(updateStr);
+	//TODO configurable tooltip information
 	BString tooltip;
-	tooltip << fWeatherSettings->Location() << ": " << fWeather->Current()->Forecast()->String() << " \n";
-	tooltip << "Low: " << fWeather->Current()->iLow() << "° / High: " << fWeather->Current()->iHigh() << "°" << "\n";
+	tooltip << fWeatherSettings->Location() << "\n";
+	tooltip << fWeather->Current()->Forecast()->String() << "\n";
+	tooltip << "High: " << fWeather->Current()->iHigh() << "°\n";
+	tooltip << "Low: " << fWeather->Current()->iLow() << "°\n";
 	tooltip << "Updated: " << updateStr;
 	SetToolTip(tooltip);
 
@@ -415,9 +418,8 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		BNotification notification(B_INFORMATION_NOTIFICATION);
 		notification.SetGroup("DeskbarWeather");
 		notification.SetTitle("GeoLocation Refresh Complete");
-		BString content(fWeatherSettings->Location());
-		//TODO improved formatting(i.e. more digits after the decimal)
-		content << "\n\nLatitude: " << fWeatherSettings->Latitude() << "\n\nLongitude:" << fWeatherSettings->Longitude();
+		BString content;
+		content.SetToFormat("%s\n\nLatitude: %.4f\n\nLongitude: %.4f", fWeatherSettings->Location(), fWeatherSettings->Latitude(), fWeatherSettings->Longitude());
 		notification.SetContent(content);
 		notification.Send();
 	}
