@@ -22,7 +22,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE)
 {
 	BFont bigFont(be_bold_font);
-	bigFont.SetSize(bigFont.Size()+4);
+	bigFont.SetSize(bigFont.Size()+(compact ? 2 : 4));
 
 	BString windowTitle("Weather Conditions & Forecast for ");
 	windowTitle << location;
@@ -63,7 +63,6 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			.End()
 			.AddGlue()
 		.End()
-//		.AddStrut(B_USE_BIG_SPACING)
 		.AddGlue()
 		.Add(tempGrid = BLayoutBuilder::Grid<>(B_USE_HALF_ITEM_SPACING, compact ? 0 : B_USE_BIG_SPACING)
 			.Add(_BuildStringView("CurrentLabel", "Current:", B_ALIGN_RIGHT, &bigFont), 0, 0)
@@ -74,7 +73,6 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			.Add(_BuildStringView("LowLabel", currentLowString.String(), B_ALIGN_LEFT, &bigFont), 1, 2)
 			.SetColumnWeight(0, 0)
 		)
-//		.AddStrut(B_USE_BIG_SPACING)
 		.AddGlue()
 		.Add(otherGrid = BLayoutBuilder::Grid<>(B_USE_HALF_ITEM_SPACING, compact ? 0 : B_USE_BIG_SPACING)
 			.Add(_BuildStringView("HumidityLabel", "Humidity:", B_ALIGN_RIGHT, &bigFont), 0, 0)
@@ -137,7 +135,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			forecastBuilder.Add(separatorView);
 		}
 	}
-	forecastBuilder.SetInsets(compact ? 0 : B_USE_ITEM_INSETS);
+	forecastBuilder.SetInsets(compact ? 1 : B_USE_ITEM_INSETS);
 
 	BBox* currentBox = new BBox("CurrentBBox");
 	BString boxLabel("Current conditions updated: ");
