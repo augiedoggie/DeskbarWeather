@@ -237,6 +237,10 @@ DeskbarWeatherView::_Init()
 		fIcon = NULL;
 	} else
 		_LoadIcon("unknown");
+
+	BFont font;
+	if (fWeatherSettings->GetFont(font) == B_OK)
+		SetFont(&font);
 }
 
 
