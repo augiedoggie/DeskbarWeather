@@ -35,6 +35,7 @@ const uint32 kRefreshMessage = 'RqGw';
 const uint32 kForceRefreshMessage = 'FrGw';
 const uint32 kSettingsChangeMessage = 'ScGw';
 const uint32 kGeoLocationMessage = 'GlGw';
+const uint32 kForceGeoLocationMessage = 'GfGw';
 
 const char* kViewName = "DeskbarWeatherView";
 const char* kAppMimetype = "application/x-vnd.cpr.DeskbarWeather";
@@ -157,14 +158,13 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			break;
 		case kSettingsChangeMessage:
 		{
+			//TODO check for geolocation status change
 			fWeather->RebuildRequestUrl();
 			_CheckMessageRunner();
-			//TODO check for geolocation status change
 			//TODO only reset the font it it actually changes
 			BFont font;
 			fWeatherSettings->GetFont(font);
 			SetFont(&font);
-//			_ForceRefresh();
 			Invalidate();
 			break;
 		}
@@ -173,6 +173,10 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			break;
 		case kRefreshMessage:
 			_RefreshComplete(message);
+			break;
+		case kForceGeoLocationMessage:
+			if (fLocationProvider != NULL)
+				fLocationProvider->Run(true); // will force a weather refresh when the reply message arrives
 			break;
 		case kGeoLocationMessage:
 			_GeoLookupComplete(message);
@@ -341,8 +345,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 			notification.SetGroup("DeskbarWeather");
 			notification.SetTitle("Json Parse Error");
 			//TODO add a more descriptive error message
-			BString content("There was an error parsing the returned weather data!");
-			notification.SetContent(content);
+			notification.SetContent("There was an error parsing the returned weather data!");
 			notification.Send();
 		} else if (fWeatherSettings->UseNotification()) {
 			//send good notification if they're enabled
@@ -395,10 +398,31 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		notification.Send();
 		return;
 	}
-	//TODO add setting to show geolookup results notification on success(lat, lon, city, etc...)
 
-	if (fLocationProvider->ParseResult(*message) == B_OK)
-		_ForceRefresh();
+	if (fLocationProvider->ParseResult(*message) != B_OK)
+	{
+	   BNotification notification(B_ERROR_NOTIFICATION);
+	   notification.SetGroup("DeskbarWeather");
+	   notification.SetTitle("GeoLocation Json Parse Error");
+	   notification.SetContent("There was an error parsing the returned location data!");
+	   notification.Send();
+	   return;
+   }
+
+	// don't show a notification if the location is cached
+	if (!message->HasBool(kGeoLookupCacheKey)) {
+		//TODO add setting to control whether this notification is sent
+		BNotification notification(B_INFORMATION_NOTIFICATION);
+		notification.SetGroup("DeskbarWeather");
+		notification.SetTitle("GeoLocation Refresh Complete");
+		BString content(fWeatherSettings->Location());
+		//TODO improved formatting(i.e. more digits after the decimal)
+		content << "\n\nLatitude: " << fWeatherSettings->Latitude() << "\n\nLongitude:" << fWeatherSettings->Longitude();
+		notification.SetContent(content);
+		notification.Send();
+	}
+
+	_ForceRefresh();
 }
 
 
@@ -422,11 +446,16 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 	BMenuItem* forecastItem = NULL;
 	BMenuItem* refreshItem = NULL;
 	BPopUpMenu* popupmenu = new BPopUpMenu("Menu");
-	BLayoutBuilder::Menu<>(popupmenu)
+	BLayoutBuilder::Menu<> builder = BLayoutBuilder::Menu<>(popupmenu)
 		.AddItem("Open Forecast Window", kForecastWindowMessage)
 		.GetItem(forecastItem)
-		.AddItem("Refresh Now", kForceRefreshMessage)
-		.GetItem(refreshItem)
+		.AddItem("Refresh Weather", kForceRefreshMessage)
+		.GetItem(refreshItem);
+
+	if (fWeatherSettings->UseGeoLocation())
+		builder.AddItem("Refresh GeoLocation", kForceGeoLocationMessage);
+
+	builder
 		.AddSeparator()
 		.AddItem("Settings" B_UTF8_ELLIPSIS, kConfigureMessage)
 		.AddItem("Help", kHelpMessage).SetEnabled(false)
