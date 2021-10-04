@@ -9,6 +9,7 @@
 
 #include <Bitmap.h>
 #include <Box.h>
+#include <DateTimeFormat.h>
 #include <File.h>
 #include <IconUtils.h>
 #include <LayoutBuilder.h>
@@ -88,9 +89,15 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 	BGroupView* forecastView = new BGroupView(B_HORIZONTAL, compact ? 0 : B_USE_DEFAULT_SPACING);
 	BLayoutBuilder::Group<> forecastBuilder = BLayoutBuilder::Group<>(forecastView);
 
+	BDateTimeFormat format;
+	format.SetDateTimeFormat(B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT, B_DATE_ELEMENT_WEEKDAY | B_DATE_ELEMENT_MONTH | B_DATE_ELEMENT_DAY);
+
 	BObjectList<Condition>* forecastList = weather->Forecast();
 	for (int32 i = 0; i < forecastList->CountItems(); i++) {
 		Condition* condition = forecastList->ItemAt(i);
+
+		BString dayString;
+		format.Format(dayString, condition->Day(), B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT);
 
 		BString lowString;
 		lowString << condition->iLow() << "°";
@@ -102,7 +109,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			.AddGroup(B_VERTICAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
 				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
 					.AddGlue()
-					.Add(new BStringView("DateString", condition->Day()->String()))
+					.Add(new BStringView("DateString", dayString))
 					.AddGlue()
 				.End()
 				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)

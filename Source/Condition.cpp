@@ -3,7 +3,6 @@
 
 #include "Condition.h"
 
-#include <DateFormat.h>
 #include <NumberFormat.h>
 #include <String.h>
 
@@ -16,7 +15,7 @@ Condition::Condition()
 	fHumidity(new BString()),
 	fWind(new BString()),
 	fIcon(new BString("unknown")),
-	fDay(new BString()),
+	fDay(-999),
 	fTemp(-999),
 	fLowTemp(-999),
 	fHighTemp(-999)
@@ -29,7 +28,6 @@ Condition::~Condition()
 	delete fHumidity;
 	delete fWind;
 	delete fIcon;
-	delete fDay;
 }
 
 
@@ -163,22 +161,13 @@ Condition::Icon()
 
 
 void
-Condition::SetDay(const char* day)
-{
-	fDay->SetTo(day);
-}
-
-
-void
 Condition::SetDay(time_t t)
 {
-	BDateTimeFormat format;
-	format.SetDateTimeFormat(B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT, B_DATE_ELEMENT_WEEKDAY | B_DATE_ELEMENT_MONTH | B_DATE_ELEMENT_DAY);
-	format.Format(*fDay, t, B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT);
+	fDay = t;
 }
 
 
-BString*
+time_t
 Condition::Day()
 {
 	return fDay;

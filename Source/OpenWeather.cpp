@@ -148,11 +148,11 @@ OpenWeather::ParseResult(BMessage& data)
 	if (fOpenWeatherMessage->FindMessage("current", &currentMsg) == B_OK)
 		fCurrent = _ParseDay(currentMsg);
 
+	fLastUpdateTime = fCurrent->Day();
+
 	BMessage dailyMsg;
 	if (fOpenWeatherMessage->FindMessage("daily", &dailyMsg) == B_OK)
 		_ParseForecast(dailyMsg);
-
-	fLastUpdateTime = time(NULL);
 
 	return B_OK;
 }
@@ -243,9 +243,6 @@ OpenWeather::_ParseForecast(BMessage& data)
 	BMessage bufMsg;
 	if (data.FindMessage("0", &bufMsg) != B_OK)
 		return B_ERROR;
-
-	double t = data.GetDouble("dt", -99999);
-	fCurrent->SetDay(t);
 
 	BMessage tempMsg;
 	if (bufMsg.FindMessage("temp", &tempMsg) == B_OK) {

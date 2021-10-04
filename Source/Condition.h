@@ -42,16 +42,15 @@ public:
 			void		SetIcon(const char* icon);
 			BString*	Icon();
 
-			void		SetDay(const char* day);
 			void		SetDay(time_t t);
-			BString*	Day();
+			time_t		Day();
 
 private:
 			BString*	fForecast;
 			BString*	fHumidity;
 			BString*	fWind;
 			BString*	fIcon;
-			BString*	fDay;
+			time_t		fDay;
 			double		fTemp;
 			double		fFeelsLike;
 			double		fLowTemp;
