@@ -29,6 +29,8 @@ public:
 	const char*	ApiKey();
 	void		SetUseGeoLocation(bool enabled);
 	bool		UseGeoLocation();
+	void		SetUseGeoNotification(bool enabled);
+	bool		UseGeoNotification();
 	void		SetUseNotification(bool enabled);
 	bool		UseNotification();
 	status_t	SetFont(const char* family, const char* style, double size);

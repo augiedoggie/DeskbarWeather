@@ -28,7 +28,7 @@ public:
 
 private:
 			void		_InitControls(bool revert = false);
-			void		_UpdatePrefs();
+			void		_SaveSettings();
 			BMenu*		_BuildFontMenu();
 			status_t	_UpdateFontMenu(BMessage* message);
 
@@ -39,6 +39,7 @@ private:
 	BRadioButton*		fImperialButton;
 	BTextControl*		fLocationControl;
 	BCheckBox*			fLocationBox;
+	BCheckBox*			fGeoNotificationBox;
 	BCheckBox*			fNotificationBox;
 	BCheckBox*			fCompactBox;
 	BMenuField*			fIntervalMenuField;

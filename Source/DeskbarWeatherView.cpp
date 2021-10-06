@@ -409,24 +409,23 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		return;
 	}
 
-	if (fLocationProvider->ParseResult(*message) != B_OK)
-	{
-	   BNotification notification(B_ERROR_NOTIFICATION);
-	   notification.SetGroup("DeskbarWeather");
-	   notification.SetTitle("GeoLocation Json Parse Error");
-	   notification.SetContent("There was an error parsing the returned location data!");
-	   notification.Send();
-	   return;
-   }
+	if (fLocationProvider->ParseResult(*message) != B_OK) {
+		BNotification notification(B_ERROR_NOTIFICATION);
+		notification.SetGroup("DeskbarWeather");
+		notification.SetTitle("GeoLocation Json Parse Error");
+		notification.SetContent("There was an error parsing the returned location data!");
+		notification.Send();
+		return;
+	}
 
-	// don't show a notification if the location is cached
-	if (!message->HasBool(kGeoLookupCacheKey)) {
-		//TODO add setting to control whether this notification is sent
+	if (fWeatherSettings->UseGeoNotification()) {
 		BNotification notification(B_INFORMATION_NOTIFICATION);
 		notification.SetGroup("DeskbarWeather");
 		notification.SetTitle("GeoLocation Refresh Complete");
 		BString content;
 		content.SetToFormat("%s\n\nLatitude: %.4f\n\nLongitude: %.4f", fWeatherSettings->Location(), fWeatherSettings->Latitude(), fWeatherSettings->Longitude());
+		if (message->HasBool(kGeoLookupCacheKey))
+			content << "\n\n(using cached location)";
 		notification.SetContent(content);
 		notification.Send();
 	}
@@ -471,7 +470,7 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 		.AddItem("Quit", kQuitMessage);
 
 	// disable items if we have no data to show
-	if (fWeather == NULL)
+	if (fWeather == NULL && refreshItem != NULL)
 		refreshItem->SetEnabled(false);
 
 	if ((fWeather == NULL || fWeather->Current() == NULL) && forecastItem != NULL)

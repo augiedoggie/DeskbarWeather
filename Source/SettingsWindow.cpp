@@ -21,6 +21,7 @@ enum {
 	kImperialMessage				= 'DwIm',
 	kMetricMessage					= 'DwMm',
 	kNotificationCheckboxMessage	= 'GcNo',
+	kGeoNotificationCheckboxMessage	= 'GcGn',
 	kRevertButtonMessage			= 'GcRv',
 	kSaveButtonMessage				= 'GcSv',
 	kCompactCheckboxMessage			= 'DwCc'
@@ -32,6 +33,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 	BWindow(frame, "Weather Settings", B_FLOATING_WINDOW_LOOK, B_MODAL_APP_WINDOW_FEEL,
 			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
 	fCompactBox(NULL),
+	fGeoNotificationBox(NULL),
 	fImperialButton(NULL),
 	fIntervalMenuField(NULL),
 	fInvoker(invoker),
@@ -70,6 +72,8 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 
 	fNotificationBox = new BCheckBox("NotificationCheckBox", "Show notification after update", new BMessage(kNotificationCheckboxMessage));
 
+	fGeoNotificationBox = new BCheckBox("GeoNotificationCheckBox", "Show notification after lookup", new BMessage(kGeoNotificationCheckboxMessage));
+
 	fCompactBox = new BCheckBox("CompactForecastBox", "Use compact forecast window", new BMessage(kCompactCheckboxMessage));
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
@@ -80,20 +84,21 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 			.Add(fNotificationBox, 1, 2)
 			.AddTextControl(fLocationControl, 0, 3, B_ALIGN_RIGHT)
 			.Add(fLocationBox, 1, 4)
+			.Add(fGeoNotificationBox, 1, 5)
 //			.Add(BSpaceLayoutItem::CreateGlue(), 0, 4, 1, 1)
-			.AddGroup(B_HORIZONTAL, 0.0, 0, 5, 1, 1)
+			.AddGroup(B_HORIZONTAL, 0.0, 0, 6, 1, 1)
 				.SetExplicitAlignment(BAlignment(B_ALIGN_RIGHT, B_ALIGN_MIDDLE))
 				.Add(unitsView)
 				.AddStrut(be_control_look->DefaultLabelSpacing())
 			.End()
-			.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING, 1, 5, 1, 1)
+			.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING, 1, 6, 1, 1)
 				.SetExplicitAlignment(BAlignment(B_ALIGN_LEFT, B_ALIGN_TOP))
 				.Add(fImperialButton)
 				.AddStrut(be_control_look->DefaultItemSpacing())
 				.Add(fMetricButton)
 			.End()
-			.AddMenuField(fontMenuField, 0, 6, B_ALIGN_RIGHT)
-			.Add(fCompactBox, 1, 7)
+			.AddMenuField(fontMenuField, 0, 7, B_ALIGN_RIGHT)
+			.Add(fCompactBox, 1, 8)
 //			.Add(BSpaceLayoutItem::CreateGlue(), 2, 0, 1, 5)
 		.End()
 		.AddGlue()
@@ -156,11 +161,23 @@ SettingsWindow::MessageReceived(BMessage* message)
 				return;
 
 			locationControl->SetEnabled(!useGeoCheckbox->Value());
+			fGeoNotificationBox->SetEnabled(useGeoCheckbox->Value());
 
 			if (fWeatherSettings->UseGeoLocation() != useGeoCheckbox->Value()) {
 				fWeatherSettings->SetUseGeoLocation(useGeoCheckbox->Value());
 				fInvoker->Invoke();
 			}
+			break;
+		}
+		case kGeoNotificationCheckboxMessage:
+		{
+			int32 value = message->GetInt32("be:value", -1);
+			if (value == -1)
+				break;
+
+			if (fWeatherSettings->UseGeoNotification() != value)
+				fWeatherSettings->SetUseGeoNotification(value);
+
 			break;
 		}
 		case kNotificationCheckboxMessage:
@@ -191,7 +208,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 				(new BAlert("Error", "Font Error!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 			break;
 		case kSaveButtonMessage:
-			_UpdatePrefs();
+			_SaveSettings();
 			break;
 		case kRevertButtonMessage:
 			_InitControls(true);
@@ -211,6 +228,7 @@ SettingsWindow::_InitControls(bool revert)
 		fWeatherSettings->SetLocation(fWeatherSettingsCache->Location());
 		fWeatherSettings->SetRefreshInterval(fWeatherSettingsCache->RefreshInterval());
 		fWeatherSettings->SetUseNotification(fWeatherSettingsCache->UseNotification());
+		//TODO revert font
 	}
 
 	if (fWeatherSettings->ImperialUnits())
@@ -221,7 +239,11 @@ SettingsWindow::_InitControls(bool revert)
 	if (fWeatherSettings->UseGeoLocation()) {
 		fLocationBox->SetValue(1);
 		fLocationControl->SetEnabled(false);
-	}
+	} else
+		fGeoNotificationBox->SetEnabled(false);
+
+	if (fWeatherSettings->UseGeoNotification())
+		fGeoNotificationBox->SetValue(1);
 
 	if (fWeatherSettings->UseNotification())
 		fNotificationBox->SetValue(1);
@@ -241,7 +263,7 @@ SettingsWindow::_InitControls(bool revert)
 
 
 void
-SettingsWindow::_UpdatePrefs()
+SettingsWindow::_SaveSettings()
 {
 	bool needRefresh = false;
 
