@@ -41,15 +41,17 @@ const char* kViewName = "DeskbarWeatherView";
 const char* kAppMimetype = "application/x-vnd.cpr.DeskbarWeather";
 
 
-extern "C" _EXPORT BView* instantiate_deskbar_item(void)
+extern "C" _EXPORT BView* instantiate_deskbar_item(float maxWidth, float maxHeight)
 {
-	return new DeskbarWeatherView();
+	//TODO init weathersetttings, calculate width for the current font, and pass settings object to the view
+	BRect frame(0, 0, 39, maxHeight - 1); // 129 x 16 max?
+	return new DeskbarWeatherView(frame);
 }
 
 
-DeskbarWeatherView::DeskbarWeatherView()
+DeskbarWeatherView::DeskbarWeatherView(BRect frame)
 	:
-	BView(BRect(0, 0, 39, 15), kViewName, B_FOLLOW_NONE, B_WILL_DRAW),
+	BView(frame, kViewName, B_FOLLOW_NONE, B_WILL_DRAW),
 	fIcon(NULL),
 	fLocationProvider(NULL),
 	fMessageRunner(NULL),
@@ -196,14 +198,14 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 void
 DeskbarWeatherView::Draw(BRect updateRect)
 {
-	BRect bounds = Bounds();
+	float maxHeight = Bounds().Height();
 
 	if (fIcon != NULL) {
 		SetDrawingMode(B_OP_ALPHA);
 		DrawBitmap(fIcon);
 		SetDrawingMode(B_OP_OVER);
 	} else {
-		BRect iconRect(0, 0, 15, bounds.Height());
+		BRect iconRect(0, 0, maxHeight - 1, maxHeight - 1);
 		rgb_color origColor = HighColor();
 		SetHighColor({ 0, 100, 255, 255 });
 		FillRect(iconRect);
@@ -213,9 +215,10 @@ DeskbarWeatherView::Draw(BRect updateRect)
 	font_height fontHeight;
 	GetFontHeight(&fontHeight);
 
-	float textY = (bounds.Height() / 2) + ((fontHeight.ascent - fontHeight.descent) / 2);
+	float textY = (maxHeight / 2) + ((fontHeight.ascent - fontHeight.descent) / 2);
 
-	MovePenTo(17, textY + 1);
+	// maxHeight + 1 moves to 17 in the X to give an extra pixel padding
+	MovePenTo(maxHeight + 1, textY + 1);
 
 	BString tempString;
 	//TODO fix text being cut off during decimal display in celsius mode
@@ -238,7 +241,8 @@ DeskbarWeatherView::_Init()
 {
 	fWeatherSettings = new WeatherSettings();
 
-	fIcon = new BBitmap(BRect(0, 0, 15, 15), B_RGBA32);
+	float iconHeight = Bounds().Height() - 1;
+	fIcon = new BBitmap(BRect(0, 0, iconHeight, iconHeight), B_RGBA32);
 	if (fIcon->InitCheck() != B_OK) {
 		delete fIcon;
 		fIcon = NULL;

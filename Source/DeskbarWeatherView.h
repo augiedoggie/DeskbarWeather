@@ -18,7 +18,7 @@ class WeatherSettings;
 class DeskbarWeatherView : public BView {
 
 public:
-						DeskbarWeatherView();
+						DeskbarWeatherView(BRect frame);
 						DeskbarWeatherView(BMessage* message);
 						~DeskbarWeatherView();
 
