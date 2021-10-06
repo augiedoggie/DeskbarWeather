@@ -161,11 +161,14 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			//TODO check for geolocation status change
 			fWeather->RebuildRequestUrl();
 			_CheckMessageRunner();
-			//TODO only reset the font it it actually changes
-			BFont font;
-			fWeatherSettings->GetFont(font);
-			SetFont(&font);
-			Invalidate();
+			BFont newFont, oldFont;
+			fWeatherSettings->GetFont(newFont);
+			GetFont(&oldFont);
+			if (oldFont != newFont) {
+				//TODO calculate string width and see if we need to restart the replicant to change view size
+				SetFont(&newFont);
+				Invalidate();
+			}
 			break;
 		}
 		case kForceRefreshMessage:
