@@ -5,6 +5,7 @@
 #define _DESKBARWEATHERVIEW_H_
 
 
+#include <Locker.h>
 #include <View.h>
 
 class BBitmap;
@@ -50,6 +51,7 @@ private:
 	IpApiLocationProvider*	fLocationProvider;
 	OpenWeather*			fWeather;
 	BBitmap*				fIcon;
+	BLocker					fLock;
 	BMessageRunner*			fMessageRunner;
 	WeatherSettings*		fWeatherSettings;
 };

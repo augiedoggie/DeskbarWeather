@@ -11,6 +11,7 @@
 
 #include <Alert.h>
 #include <Application.h>
+#include <AutoLocker.h>
 #include <Bitmap.h>
 #include <Deskbar.h>
 #include <IconUtils.h>
@@ -54,6 +55,7 @@ DeskbarWeatherView::DeskbarWeatherView(BRect frame)
 	BView(frame, kViewName, B_FOLLOW_NONE, B_WILL_DRAW),
 	fIcon(NULL),
 	fLocationProvider(NULL),
+	fLock("weather data lock"),
 	fMessageRunner(NULL),
 	fWeather(NULL),
 	fWeatherSettings(NULL)
@@ -67,6 +69,7 @@ DeskbarWeatherView::DeskbarWeatherView(BMessage* message)
 	BView(message),
 	fIcon(NULL),
 	fLocationProvider(NULL),
+	fLock("weather data lock"),
 	fMessageRunner(NULL),
 	fWeather(NULL),
 	fWeatherSettings(NULL)
@@ -109,6 +112,7 @@ DeskbarWeatherView::Archive(BMessage* message, bool deep) const
 void
 DeskbarWeatherView::AttachedToWindow()
 {
+	AutoLocker<BLocker> locker(fLock);
 	BView::AttachedToWindow();
 	if (Parent())
 		SetViewColor(Parent()->ViewColor());
@@ -198,6 +202,8 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 void
 DeskbarWeatherView::Draw(BRect updateRect)
 {
+	AutoLocker<BLocker> locker(fLock);
+
 	float maxHeight = Bounds().Height();
 
 	if (fIcon != NULL) {
@@ -239,6 +245,9 @@ DeskbarWeatherView::Draw(BRect updateRect)
 void
 DeskbarWeatherView::_Init()
 {
+	//if (fLock.InitCheck() != B_OK)
+		//TODO exit app
+
 	fWeatherSettings = new WeatherSettings();
 
 	fIcon = LoadResourceBitmap("unknown", Bounds().Height() - 1);
@@ -290,8 +299,9 @@ DeskbarWeatherView::_CheckMessageRunner()
 void
 DeskbarWeatherView::_ShowForecastWindow()
 {
+	AutoLocker<BLocker> locker(fLock);
 	//TODO check for existing window and activate it
-	if (fWeather->Current() != NULL)
+	if (fWeather != NULL && fWeather->Current() != NULL)
 		new ForecastWindow(fWeather, BRect(100, 100, 500, 300), fWeatherSettings->Location(), fWeatherSettings->CompactForecast());
 }
 
@@ -336,6 +346,7 @@ DeskbarWeatherView::GetAppImage(image_info& image)
 void
 DeskbarWeatherView::_RefreshComplete(BMessage* message)
 {
+	AutoLocker<BLocker> locker(fLock);
 	int32 status = message->GetInt32("re:code", -1);
 	BString response(message->GetString("re:message", "BMessage Error"));
 
@@ -449,6 +460,7 @@ DeskbarWeatherView::_RemoveFromDeskbar()
 void
 DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 {
+	AutoLocker<BLocker> locker(fLock);
 	BMenuItem* forecastItem = NULL;
 	BMenuItem* refreshItem = NULL;
 	BPopUpMenu* popupmenu = new BPopUpMenu("Menu");
