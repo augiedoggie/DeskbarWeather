@@ -31,6 +31,8 @@ public:
 	virtual	void		MouseDown(BPoint point);
 	virtual	void		MessageReceived(BMessage* message);
 
+	static	BBitmap*	LoadResourceBitmap(const char* name, int32 size);
+
 private:
 			void		_Init();
 			status_t	_CheckMessageRunner();
@@ -44,7 +46,6 @@ private:
 			void		_ShowForecastWindow();
 			void		_ShowConfigureWindow();
 			void		_ForceRefresh();
-			void		_LoadIcon(const char* name);
 
 	IpApiLocationProvider*	fLocationProvider;
 	OpenWeather*			fWeather;

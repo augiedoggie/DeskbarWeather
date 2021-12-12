@@ -241,13 +241,7 @@ DeskbarWeatherView::_Init()
 {
 	fWeatherSettings = new WeatherSettings();
 
-	float iconHeight = Bounds().Height() - 1;
-	fIcon = new BBitmap(BRect(0, 0, iconHeight, iconHeight), B_RGBA32);
-	if (fIcon->InitCheck() != B_OK) {
-		delete fIcon;
-		fIcon = NULL;
-	} else
-		_LoadIcon("unknown");
+	fIcon = LoadResourceBitmap("unknown", Bounds().Height() - 1);
 
 	BFont font;
 	if (fWeatherSettings->GetFont(font) == B_OK)
@@ -363,6 +357,9 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 			//TODO configurable notification information
 			content << "\n\n" << fWeather->Current()->Forecast()->String() << "\n\n" << fWeather->Current()->Temp() << "°";
 			notification.SetContent(content);
+			BBitmap* bitmap = LoadResourceBitmap(fWeather->Current()->Icon()->String(), 32);
+			notification.SetIcon(bitmap);
+			delete bitmap;
 			notification.Send();
 		}
 	} else {
@@ -375,7 +372,8 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 		notification.SetContent(content);
 		notification.Send();
 	}
-	_LoadIcon(fWeather->Current()->Icon()->String());
+	delete fIcon;
+	fIcon = LoadResourceBitmap(fWeather->Current()->Icon()->String(), Bounds().Height() - 1);
 
 	BString updateStr;
 	fWeather->LastUpdate(updateStr);
@@ -457,6 +455,7 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 	BLayoutBuilder::Menu<> builder = BLayoutBuilder::Menu<>(popupmenu)
 		.AddItem("Open Forecast Window", kForecastWindowMessage)
 		.GetItem(forecastItem)
+		.AddSeparator()
 		.AddItem("Refresh Weather", kForceRefreshMessage)
 		.GetItem(refreshItem);
 
@@ -484,24 +483,32 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 }
 
 
-void
-DeskbarWeatherView::_LoadIcon(const char* name)
+BBitmap*
+DeskbarWeatherView::LoadResourceBitmap(const char* name, int32 size)
 {
-	if (fIcon == NULL)
-		return;
+	BBitmap* bitmap = new BBitmap(BRect(0, 0, size, size), B_RGBA32);
+	if (bitmap == NULL)
+		return NULL;
 
-	image_info info;
-	if (DeskbarWeatherView::GetAppImage(info) != B_OK)
-		return;
+	if (bitmap->InitCheck() != B_OK) {
+		delete bitmap;
+		return NULL;
+	}
 
-	BFile file(info.name, B_READ_ONLY);
+	image_info image;
+	if (DeskbarWeatherView::GetAppImage(image) != B_OK)
+		return bitmap;
+
+	BFile file(image.name, B_READ_ONLY);
 	if (file.InitCheck() < B_OK)
-		return;
+		return bitmap;
 
 	BResources resources(&file);
 
-	size_t size;
-	const uint8* data = static_cast<const uint8*>(resources.LoadResource(B_VECTOR_ICON_TYPE, name, &size));
+	size_t datasize;
+	const void* data = resources.LoadResource(B_VECTOR_ICON_TYPE, name, &datasize);
 	if (data != NULL)
-		BIconUtils::GetVectorIcon(data, size, fIcon);
+		BIconUtils::GetVectorIcon(static_cast<const uint8*>(data), datasize, bitmap);
+
+	return bitmap;
 }

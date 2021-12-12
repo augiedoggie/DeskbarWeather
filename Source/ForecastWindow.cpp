@@ -54,7 +54,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			.End()
 			.AddGroup(B_HORIZONTAL)
 				.AddGlue()
-				.Add(new BitmapView("ConditionBitmap", _LoadBitmap(weather->Current()->Icon()->String(), compact ? 47 : 63)), 0)
+				.Add(new BitmapView("ConditionBitmap", DeskbarWeatherView::LoadResourceBitmap(weather->Current()->Icon()->String(), compact ? 47 : 63)), 0)
 				.AddGlue()
 			.End()
 			.AddGroup(B_HORIZONTAL)
@@ -114,7 +114,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 				.End()
 				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
 					.AddGlue()
-					.Add(new BitmapView("ConditionBitmap", _LoadBitmap(condition->Icon()->String(), compact ? 35 : 47)), 0)
+					.Add(new BitmapView("ConditionBitmap", DeskbarWeatherView::LoadResourceBitmap(condition->Icon()->String(), compact ? 35 : 47)), 0)
 					.AddGlue()
 				.End()
 				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
@@ -180,28 +180,4 @@ ForecastWindow::_BuildStringView(const char* name, const char* label, alignment 
 		stringView->SetFont(font);
 
 	return stringView;
-}
-
-
-BBitmap*
-ForecastWindow::_LoadBitmap(const char* name, int32 size)
-{
-	BBitmap* bitmap = new BBitmap(BRect(0, 0, size, size), B_RGBA32);
-
-	image_info image;
-	if (DeskbarWeatherView::GetAppImage(image) != B_OK)
-		return bitmap;
-
-	BFile file(image.name, B_READ_ONLY);
-	if (file.InitCheck() < B_OK)
-		return bitmap;
-
-	BResources resources(&file);
-
-	size_t datasize;
-	const void* data = resources.LoadResource(B_VECTOR_ICON_TYPE, name, &datasize);
-	if (data != NULL)
-		BIconUtils::GetVectorIcon((const uint8*)data, datasize, bitmap);
-
-	return bitmap;
 }
