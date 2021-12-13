@@ -353,35 +353,29 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	if (BHttpRequest::IsSuccessStatusCode(status)) {
 		if (fWeather->ParseResult(*message) != B_OK) {
 			//always send bad notification
-			BNotification notification(B_ERROR_NOTIFICATION);
-			notification.SetGroup("DeskbarWeather");
-			notification.SetTitle("Json Parse Error");
 			//TODO add a more descriptive error message
-			notification.SetContent("There was an error parsing the returned weather data!");
-			notification.Send();
+			_ShowErrorNotification("Json Parse Error", "There was an error parsing the returned weather data!");
 		} else if (fWeatherSettings->UseNotification()) {
 			//send good notification if they're enabled
 			BNotification notification(B_INFORMATION_NOTIFICATION);
-			notification.SetGroup("DeskbarWeather");
-			notification.SetTitle("Weather Refresh Complete");
-			BString content(fWeatherSettings->Location());
-			//TODO configurable notification information
-			content << "\n\n" << fWeather->Current()->Forecast()->String() << "\n\n" << fWeather->Current()->Temp() << "°";
-			notification.SetContent(content);
-			BBitmap* bitmap = LoadResourceBitmap(fWeather->Current()->Icon()->String(), 32);
-			notification.SetIcon(bitmap);
-			delete bitmap;
-			notification.Send();
+			if (notification.InitCheck() == B_OK) {
+				notification.SetGroup("DeskbarWeather");
+				notification.SetTitle("Weather Refresh Complete");
+				BString content(fWeatherSettings->Location());
+				//TODO configurable notification information
+				content << "\n\n" << fWeather->Current()->Forecast()->String() << "\n\n" << fWeather->Current()->Temp() << "°";
+				notification.SetContent(content);
+				BBitmap* bitmap = LoadResourceBitmap(fWeather->Current()->Icon()->String(), 32);
+				notification.SetIcon(bitmap);
+				delete bitmap;
+				notification.Send();
+			}
 		}
 	} else {
 		//always send bad notification
-		BNotification notification(B_ERROR_NOTIFICATION);
-		notification.SetGroup("DeskbarWeather");
-		notification.SetTitle("Weather Refresh Error");
 		BString content("Error: ");
 		content << response;
-		notification.SetContent(content);
-		notification.Send();
+		_ShowErrorNotification("Weather Refresh Error", content);
 	}
 	delete fIcon;
 	fIcon = LoadResourceBitmap(fWeather->Current()->Icon()->String(), Bounds().Height() - 1);
@@ -408,22 +402,14 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 	BString response(message->GetString("re:message", "BMessage Error"));
 
 	if (!BHttpRequest::IsSuccessStatusCode(status)) {
-		BNotification notification(B_ERROR_NOTIFICATION);
-		notification.SetGroup("DeskbarWeather");
-		notification.SetTitle("GeoLocation Lookup Error");
 		BString content("GeoLocation Error: ");
 		content << response;
-		notification.SetContent(content);
-		notification.Send();
+		_ShowErrorNotification("GeoLocation Lookup Error", content);
 		return;
 	}
 
 	if (fLocationProvider->ParseResult(*message) != B_OK) {
-		BNotification notification(B_ERROR_NOTIFICATION);
-		notification.SetGroup("DeskbarWeather");
-		notification.SetTitle("GeoLocation Json Parse Error");
-		notification.SetContent("There was an error parsing the returned location data!");
-		notification.Send();
+		_ShowErrorNotification("GeoLocation Json Parse Error", "There was an error parsing the returned location data!");
 		return;
 	}
 
@@ -454,6 +440,20 @@ DeskbarWeatherView::_RemoveFromDeskbar()
 		error << strerror(status);
 		(new BAlert(NULL, error.String(), "OK"))->Go();
 	}
+}
+
+
+void
+DeskbarWeatherView::_ShowErrorNotification(const char* title, const char* content)
+{
+	BNotification notification(B_ERROR_NOTIFICATION);
+	if (notification.InitCheck() != B_OK)
+		return;
+
+	notification.SetGroup("DeskbarWeather");
+	notification.SetTitle(title);
+	notification.SetContent(content);
+	notification.Send();
 }
 
 

@@ -44,6 +44,7 @@ private:
 			void		_ShowPopUpMenu(BPoint point);
 			void		_OpenWebSite();
 			void		_OpenFolder();
+			void		_ShowErrorNotification(const char* title, const char* content);
 			void		_ShowForecastWindow();
 			void		_ShowConfigureWindow();
 			void		_ForceRefresh();
