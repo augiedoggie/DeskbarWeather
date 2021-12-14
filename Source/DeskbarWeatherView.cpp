@@ -80,7 +80,6 @@ DeskbarWeatherView::DeskbarWeatherView(BMessage* message)
 
 DeskbarWeatherView::~DeskbarWeatherView()
 {
-	//TODO close any open forecast/settings windows
 	delete fIcon;
 	delete fMessageRunner;
 	delete fWeather;
@@ -270,7 +269,7 @@ DeskbarWeatherView::_CheckMessageRunner()
 	//TODO check if we have a valid location(latitude/longitude)
 
 	if (fWeatherSettings->RefreshInterval() < 0) {
-		// automatic updates are disabled, remove any existing runner and return
+		// automatic refresh is disabled, remove any existing runner and return
 		if (fMessageRunner != NULL) {
 			delete fMessageRunner;
 			fMessageRunner = NULL;
@@ -289,8 +288,7 @@ DeskbarWeatherView::_CheckMessageRunner()
 
 	delete fMessageRunner;
 	fMessageRunner = NULL;
-	//TODO use notification instead?
-	(new BAlert("Error", "MessageRunner Error!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
+	(new BAlert("Error", "BMessageRunner Error! Automatic refresh disabled!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 
 	return B_ERROR;
 }
@@ -300,7 +298,6 @@ void
 DeskbarWeatherView::_ShowForecastWindow()
 {
 	AutoLocker<BLocker> locker(fLock);
-	//TODO check for existing window and activate it
 	if (fWeather != NULL && fWeather->Current() != NULL)
 		new ForecastWindow(fWeather, BRect(100, 100, 500, 300), fWeatherSettings->Location(), fWeatherSettings->CompactForecast());
 }
@@ -309,7 +306,6 @@ DeskbarWeatherView::_ShowForecastWindow()
 void
 DeskbarWeatherView::_ShowConfigureWindow()
 {
-	//TODO check for existing window and activate it
 	new SettingsWindow(fWeatherSettings, new BInvoker(new BMessage(kSettingsChangeMessage), this), BRect(100, 100, 500, 300));
 }
 
@@ -351,12 +347,10 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	BString response(message->GetString("re:message", "BMessage Error"));
 
 	if (BHttpRequest::IsSuccessStatusCode(status)) {
-		if (fWeather->ParseResult(*message) != B_OK) {
-			//always send bad notification
+		if (fWeather->ParseResult(*message) != B_OK)
 			//TODO add a more descriptive error message
 			_ShowErrorNotification("Json Parse Error", "There was an error parsing the returned weather data!");
-		} else if (fWeatherSettings->UseNotification()) {
-			//send good notification if they're enabled
+		else if (fWeatherSettings->UseNotification()) {
 			BNotification notification(B_INFORMATION_NOTIFICATION);
 			if (notification.InitCheck() == B_OK) {
 				notification.SetGroup("DeskbarWeather");
@@ -366,17 +360,16 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 				content << "\n\n" << fWeather->Current()->Forecast()->String() << "\n\n" << fWeather->Current()->Temp() << "°";
 				notification.SetContent(content);
 				BBitmap* bitmap = LoadResourceBitmap(fWeather->Current()->Icon()->String(), 32);
-				notification.SetIcon(bitmap);
-				delete bitmap;
+				if (bitmap != NULL) {
+					notification.SetIcon(bitmap);
+					delete bitmap;
+				}
 				notification.Send();
 			}
 		}
-	} else {
-		//always send bad notification
-		BString content("Error: ");
-		content << response;
-		_ShowErrorNotification("Weather Refresh Error", content);
-	}
+	} else
+		_ShowErrorNotification("Weather Refresh Error", response);
+
 	delete fIcon;
 	fIcon = LoadResourceBitmap(fWeather->Current()->Icon()->String(), Bounds().Height() - 1);
 
