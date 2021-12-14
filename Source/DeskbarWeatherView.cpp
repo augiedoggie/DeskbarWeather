@@ -410,6 +410,11 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		BNotification notification(B_INFORMATION_NOTIFICATION);
 		notification.SetGroup("DeskbarWeather");
 		notification.SetTitle("GeoLocation Refresh Complete");
+		BBitmap* bitmap = LoadResourceBitmap("geolookup", 32);
+		if (bitmap != NULL) {
+			notification.SetIcon(bitmap);
+			delete bitmap;
+		}
 		BString content;
 		content.SetToFormat("%s\n\nLatitude: %.4f\n\nLongitude: %.4f", fWeatherSettings->Location(), fWeatherSettings->Latitude(), fWeatherSettings->Longitude());
 		if (message->HasBool(kGeoLookupCacheKey))
