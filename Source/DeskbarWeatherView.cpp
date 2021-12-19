@@ -244,7 +244,8 @@ DeskbarWeatherView::Draw(BRect updateRect)
 void
 DeskbarWeatherView::_Init()
 {
-	//if (fLock.InitCheck() != B_OK)
+	if (fLock.InitCheck() != B_OK)
+		(new BAlert("Error", "Data lock failed InitCheck()!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 		//TODO exit app
 
 	fWeatherSettings = new WeatherSettings();
