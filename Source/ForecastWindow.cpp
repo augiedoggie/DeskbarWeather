@@ -19,7 +19,7 @@
 
 ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* location, bool compact)
 	:
-	BWindow(frame, location, B_FLOATING_WINDOW_LOOK, B_MODAL_APP_WINDOW_FEEL,
+	BWindow(frame, location, B_FLOATING_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
 			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE)
 {
 	BFont bigFont(be_bold_font);

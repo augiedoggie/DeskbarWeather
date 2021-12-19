@@ -80,6 +80,12 @@ DeskbarWeatherView::DeskbarWeatherView(BMessage* message)
 
 DeskbarWeatherView::~DeskbarWeatherView()
 {
+	for (int32 x = 0; x < be_app->CountWindows(); x++) {
+		ForecastWindow* window = dynamic_cast<ForecastWindow*>(be_app->WindowAt(x));
+		if (window != NULL)
+			window->Quit();
+	}
+
 	delete fIcon;
 	delete fMessageRunner;
 	delete fWeather;
@@ -298,6 +304,15 @@ DeskbarWeatherView::_CheckMessageRunner()
 void
 DeskbarWeatherView::_ShowForecastWindow()
 {
+	// check if we have an existing forecast window and activate it
+	for (int32 x = 0; x < be_app->CountWindows(); x++) {
+		ForecastWindow* window = dynamic_cast<ForecastWindow*>(be_app->WindowAt(x));
+		if (window != NULL) {
+			window->Activate();
+			return;
+		}
+	}
+
 	AutoLocker<BLocker> locker(fLock);
 	if (fWeather != NULL && fWeather->Current() != NULL)
 		new ForecastWindow(fWeather, BRect(100, 100, 500, 300), fWeatherSettings->Location(), fWeatherSettings->CompactForecast());
