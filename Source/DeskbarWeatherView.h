@@ -8,6 +8,22 @@
 #include <Locker.h>
 #include <View.h>
 
+enum {
+	kForecastWindowMessage = 'WnGw',
+	kConfigureMessage = 'CfGw',
+	kHelpMessage = 'HpGw',
+	kQuitMessage = 'QuGw',
+	kRefreshMessage = 'RqGw',
+	kForceRefreshMessage = 'FrGw',
+	kSettingsChangeMessage = 'ScGw',
+	kGeoLocationMessage = 'GlGw',
+	kForceGeoLocationMessage = 'GfGw'
+};
+
+static const char* kViewName = "DeskbarWeatherView";
+static const char* kAppMimetype = "application/x-vnd.cpr.DeskbarWeather";
+
+
 class BBitmap;
 class BMessageRunner;
 

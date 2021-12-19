@@ -28,20 +28,6 @@
 using namespace BPrivate::Network;
 
 
-const uint32 kForecastWindowMessage = 'WnGw';
-const uint32 kConfigureMessage = 'CfGw';
-const uint32 kHelpMessage = 'HpGw';
-const uint32 kQuitMessage = 'QuGw';
-const uint32 kRefreshMessage = 'RqGw';
-const uint32 kForceRefreshMessage = 'FrGw';
-const uint32 kSettingsChangeMessage = 'ScGw';
-const uint32 kGeoLocationMessage = 'GlGw';
-const uint32 kForceGeoLocationMessage = 'GfGw';
-
-const char* kViewName = "DeskbarWeatherView";
-const char* kAppMimetype = "application/x-vnd.cpr.DeskbarWeather";
-
-
 extern "C" _EXPORT BView* instantiate_deskbar_item(float maxWidth, float maxHeight)
 {
 	//TODO init weathersetttings, calculate width for the current font, and pass settings object to the view
