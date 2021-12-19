@@ -86,6 +86,12 @@ DeskbarWeatherView::~DeskbarWeatherView()
 			window->Quit();
 	}
 
+	for (int32 x = 0; x < be_app->CountWindows(); x++) {
+		SettingsWindow* window = dynamic_cast<SettingsWindow*>(be_app->WindowAt(x));
+		if (window != NULL)
+			window->Quit();
+	}
+
 	delete fIcon;
 	delete fMessageRunner;
 	delete fWeather;
@@ -322,6 +328,15 @@ DeskbarWeatherView::_ShowForecastWindow()
 void
 DeskbarWeatherView::_ShowConfigureWindow()
 {
+	// check if we have an existing settings window and activate it
+	for (int32 x = 0; x < be_app->CountWindows(); x++) {
+		SettingsWindow* window = dynamic_cast<SettingsWindow*>(be_app->WindowAt(x));
+		if (window != NULL) {
+			window->Activate();
+			return;
+		}
+	}
+
 	new SettingsWindow(fWeatherSettings, new BInvoker(new BMessage(kSettingsChangeMessage), this), BRect(100, 100, 500, 300));
 }
 
