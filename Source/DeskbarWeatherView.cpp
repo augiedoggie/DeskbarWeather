@@ -381,6 +381,10 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 					notification.SetIcon(bitmap);
 					delete bitmap;
 				}
+				if (fWeatherSettings->NotificationClick()) {
+					notification.SetOnClickApp(kAppMimetype);
+					notification.AddOnClickArg("--forecast");
+				}
 				notification.Send();
 			}
 		}
