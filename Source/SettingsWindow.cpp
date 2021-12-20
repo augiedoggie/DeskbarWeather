@@ -21,6 +21,7 @@ enum {
 	kImperialMessage				= 'DwIm',
 	kMetricMessage					= 'DwMm',
 	kNotificationCheckboxMessage	= 'GcNo',
+	kShowForecastCheckboxMessage	= 'RnSf',
 	kGeoNotificationCheckboxMessage	= 'GcGn',
 	kRevertButtonMessage			= 'GcRv',
 	kSaveButtonMessage				= 'GcSv',
@@ -41,6 +42,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 	fLocationControl(NULL),
 	fMetricButton(NULL),
 	fNotificationBox(NULL),
+	fShowForecastBox(NULL),
 	fWeatherSettings(prefs),
 	fWeatherSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*prefs)))
 {
@@ -54,7 +56,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 		.AddItem("1 hour", 60)
 		.AddItem("2 hours", 180)
 		.AddItem("Manual refresh only", 999999);
-	fIntervalMenuField = new BMenuField("IntervalMenuField", "Update Interval:", intervalMenu);
+	fIntervalMenuField = new BMenuField("IntervalMenuField", "Refresh Interval:", intervalMenu);
 
 	fLocationControl = new BTextControl("LocationControl", "Location:", fWeatherSettings->Location(), NULL);
 	fLocationControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
@@ -70,9 +72,11 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 
 	BMenuField* fontMenuField = new BMenuField("FontMenuField", "Font:", _BuildFontMenu());
 
-	fNotificationBox = new BCheckBox("NotificationCheckBox", "Show notification after update", new BMessage(kNotificationCheckboxMessage));
+	fNotificationBox = new BCheckBox("NotificationCheckBox", "Show notification after refresh", new BMessage(kNotificationCheckboxMessage));
 
 	fGeoNotificationBox = new BCheckBox("GeoNotificationCheckBox", "Show notification after lookup", new BMessage(kGeoNotificationCheckboxMessage));
+
+	fShowForecastBox = new BCheckBox("ShowForecastCheckBox", "Clicking the notification opens the forecast", new BMessage(kShowForecastCheckboxMessage));
 
 	fCompactBox = new BCheckBox("CompactForecastBox", "Use compact forecast window", new BMessage(kCompactCheckboxMessage));
 
@@ -82,23 +86,24 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 			.AddTextControl(apiControl, 0, 0, B_ALIGN_RIGHT)
 			.AddMenuField(fIntervalMenuField, 0, 1, B_ALIGN_RIGHT)
 			.Add(fNotificationBox, 1, 2)
-			.AddTextControl(fLocationControl, 0, 3, B_ALIGN_RIGHT)
-			.Add(fLocationBox, 1, 4)
-			.Add(fGeoNotificationBox, 1, 5)
+			.Add(fShowForecastBox, 1, 3)
+			.AddTextControl(fLocationControl, 0, 4, B_ALIGN_RIGHT)
+			.Add(fLocationBox, 1, 5)
+			.Add(fGeoNotificationBox, 1, 6)
 //			.Add(BSpaceLayoutItem::CreateGlue(), 0, 4, 1, 1)
-			.AddGroup(B_HORIZONTAL, 0.0, 0, 6, 1, 1)
+			.AddGroup(B_HORIZONTAL, 0.0, 0, 7, 1, 1)
 				.SetExplicitAlignment(BAlignment(B_ALIGN_RIGHT, B_ALIGN_MIDDLE))
 				.Add(unitsView)
 				.AddStrut(be_control_look->DefaultLabelSpacing())
 			.End()
-			.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING, 1, 6, 1, 1)
+			.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING, 1, 7, 1, 1)
 				.SetExplicitAlignment(BAlignment(B_ALIGN_LEFT, B_ALIGN_TOP))
 				.Add(fImperialButton)
 				.AddStrut(be_control_look->DefaultItemSpacing())
 				.Add(fMetricButton)
 			.End()
-			.AddMenuField(fontMenuField, 0, 7, B_ALIGN_RIGHT)
-			.Add(fCompactBox, 1, 8)
+			.AddMenuField(fontMenuField, 0, 8, B_ALIGN_RIGHT)
+			.Add(fCompactBox, 1, 9)
 //			.Add(BSpaceLayoutItem::CreateGlue(), 2, 0, 1, 5)
 		.End()
 		.AddGlue()
@@ -189,6 +194,19 @@ SettingsWindow::MessageReceived(BMessage* message)
 			if (fWeatherSettings->UseNotification() != value)
 				fWeatherSettings->SetUseNotification(value);
 
+			fShowForecastBox->SetEnabled(fWeatherSettings->UseNotification());
+
+			break;
+		}
+		case kShowForecastCheckboxMessage:
+		{
+			int32 value = message->GetInt32("be:value", -1);
+			if (value == -1)
+				break;
+
+			if (fWeatherSettings->NotificationClick() != value)
+				fWeatherSettings->SetNotificationClick(value);
+
 			break;
 		}
 		case kImperialMessage:
@@ -228,6 +246,7 @@ SettingsWindow::_InitControls(bool revert)
 		fWeatherSettings->SetLocation(fWeatherSettingsCache->Location());
 		fWeatherSettings->SetRefreshInterval(fWeatherSettingsCache->RefreshInterval());
 		fWeatherSettings->SetUseNotification(fWeatherSettingsCache->UseNotification());
+		fWeatherSettings->SetNotificationClick(fWeatherSettingsCache->NotificationClick());
 		//TODO revert font
 	}
 
@@ -245,8 +264,13 @@ SettingsWindow::_InitControls(bool revert)
 	if (fWeatherSettings->UseGeoNotification())
 		fGeoNotificationBox->SetValue(1);
 
+	if (fWeatherSettings->NotificationClick())
+		fShowForecastBox->SetValue(1);
+
 	if (fWeatherSettings->UseNotification())
 		fNotificationBox->SetValue(1);
+	else
+		fShowForecastBox->SetEnabled(false);
 
 	BMenu* intervalMenu = fIntervalMenuField->Menu();
 	BMenuItem* selectedItem = intervalMenu->FindItem(fWeatherSettings->RefreshInterval());

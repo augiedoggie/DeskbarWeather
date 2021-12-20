@@ -42,6 +42,7 @@ private:
 	BCheckBox*			fGeoNotificationBox;
 	BCheckBox*			fNotificationBox;
 	BCheckBox*			fCompactBox;
+	BCheckBox*			fShowForecastBox;
 	BMenuField*			fIntervalMenuField;
 
 };
