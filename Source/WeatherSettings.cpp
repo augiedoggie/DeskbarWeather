@@ -18,6 +18,7 @@ const char* kApiKey = "dw:ApiKey";
 const char* kUseGeoLocationKey = "dw:UseGeoLocation";
 const char* kUseGeoNotificationKey = "dw:UseGeoNotification";
 const char* kUseNotificationKey = "dw:UseNotification";
+const char* kNotificationClickKey = "dw:NotificationClick";
 const char* kLatitudeKey = "dw:Latitude";
 const char* kLongitudeKey = "dw:Longitude";
 const char* kFontFamilyKey = "dw:FontFamily";
@@ -33,6 +34,7 @@ const int32 kDefaultInterval = 10;
 const bool kImperialDefaultUnit = true;
 const bool kUseGeoLocationDefault = true;
 const bool kUseNotificationDefault = true;
+const bool kNotificationClickDefault = false;
 const bool kUseGeoNotificationDefault = true;
 const bool kCompactForecastDefault = false;
 
@@ -180,6 +182,20 @@ void
 WeatherSettings::SetUseGeoNotification(bool useNotificaton)
 {
 	SetBool(kUseGeoNotificationKey, useNotificaton);
+}
+
+
+bool
+WeatherSettings::NotificationClick()
+{
+	return GetBool(kNotificationClickKey, kNotificationClickDefault);
+}
+
+
+void
+WeatherSettings::SetNotificationClick(bool enabled)
+{
+	SetBool(kNotificationClickKey, enabled);
 }
 
 

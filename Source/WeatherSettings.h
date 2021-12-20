@@ -33,6 +33,8 @@ public:
 	bool		UseGeoNotification();
 	void		SetUseNotification(bool enabled);
 	bool		UseNotification();
+	void		SetNotificationClick(bool enabled);
+	bool		NotificationClick();
 	status_t	SetFont(const char* family, const char* style, double size);
 	status_t	GetFont(BFont& font);
 	void		SetCompactForecast(bool enabled);
