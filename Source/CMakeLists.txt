@@ -15,9 +15,9 @@ include_directories(
 
 haiku_add_executable(DeskbarWeather
 	DeskbarWeather.rdef
-	main.cpp
 	BitmapView.cpp
 	Condition.cpp
+	DeskbarWeatherApp.cpp
 	DeskbarWeatherView.cpp
 	ForecastWindow.cpp
 	IpApiLocationProvider.cpp
