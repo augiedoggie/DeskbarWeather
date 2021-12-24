@@ -497,18 +497,17 @@ void
 DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 {
 	AutoLocker<BLocker> locker(fLock);
-	BMenuItem* forecastItem = NULL;
-	BMenuItem* refreshItem = NULL;
 	BPopUpMenu* popupMenu = new BPopUpMenu("Menu");
 	BLayoutBuilder::Menu<> builder = BLayoutBuilder::Menu<>(popupMenu)
 		.AddItem("Open Forecast Window", kForecastWindowMessage)
-		.GetItem(forecastItem)
+			// disable item if we have no current data to show
+			.SetEnabled((fWeather != NULL && fWeather->Current() != NULL))
 		.AddSeparator()
 		.AddItem("Refresh Weather", kForceRefreshMessage)
-		.GetItem(refreshItem);
-
-	if (fWeatherSettings->UseGeoLocation())
-		builder.AddItem("Refresh GeoLocation", kForceGeoLocationMessage);
+			// disable item if we have no weather provider initialized
+			.SetEnabled(fWeather != NULL)
+		.AddItem("Refresh GeoLocation", kForceGeoLocationMessage)
+			.SetEnabled(fWeatherSettings->UseGeoLocation());
 
 	BMenu* helpMenu = NULL;
 	builder
@@ -516,19 +515,13 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 		.AddMenu("Help")
 			.GetMenu(helpMenu)
 			.AddItem("About DeskbarWeather", B_ABOUT_REQUESTED)
-			.AddItem("Open Manual", kHelpMessage).SetEnabled(false)
+			.AddItem("Open Manual", kHelpMessage)
+				.SetEnabled(false)  //TODO write help documentation
 			.AddItem("Open Github Page", kGithubMessage)
 		.End()
 		.AddItem("Settings" B_UTF8_ELLIPSIS, kConfigureMessage)
 		.AddSeparator()
 		.AddItem("Quit", kQuitMessage);
-
-	// disable items if we have no data to show
-	if (fWeather == NULL && refreshItem != NULL)
-		refreshItem->SetEnabled(false);
-
-	if ((fWeather == NULL || fWeather->Current() == NULL) && forecastItem != NULL)
-		forecastItem->SetEnabled(false);
 
 	helpMenu->SetTargetForItems(this);
 	popupMenu->SetTargetForItems(this);
