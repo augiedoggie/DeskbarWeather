@@ -22,10 +22,14 @@
 #include <Notification.h>
 #include <PopUpMenu.h>
 #include <Resources.h>
+#include <Roster.h>
 #include <private/netservices/HttpRequest.h>
 
 
 using namespace BPrivate::Network;
+
+
+const char* kGithubURL = "https://github.com/augiedoggie/DeskbarWeather/";
 
 
 extern "C" _EXPORT BView* instantiate_deskbar_item(float maxWidth, float maxHeight)
@@ -187,8 +191,21 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 		case kGeoLocationMessage:
 			_GeoLookupComplete(message);
 			break;
+		case kGithubMessage:
+		{
+			const char* args[] = { kGithubURL, NULL };
+
+			status_t rc = be_roster->Launch("application/x-vnd.Be.URL.https", 1, args);
+			if (rc != B_OK && rc != B_ALREADY_RUNNING)
+				(new BAlert("Error", "Failed to launch URL", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
+
+			break;
+		}
 		case kQuitMessage:
 			_RemoveFromDeskbar();
+			break;
+		case B_ABOUT_REQUESTED:
+			(new BAlert("About", "DeskbarWeather by Chris Roberts", "Cool"))->Go();
 			break;
 		default:
 			BView::MessageReceived(message);
@@ -482,8 +499,8 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 	AutoLocker<BLocker> locker(fLock);
 	BMenuItem* forecastItem = NULL;
 	BMenuItem* refreshItem = NULL;
-	BPopUpMenu* popupmenu = new BPopUpMenu("Menu");
-	BLayoutBuilder::Menu<> builder = BLayoutBuilder::Menu<>(popupmenu)
+	BPopUpMenu* popupMenu = new BPopUpMenu("Menu");
+	BLayoutBuilder::Menu<> builder = BLayoutBuilder::Menu<>(popupMenu)
 		.AddItem("Open Forecast Window", kForecastWindowMessage)
 		.GetItem(forecastItem)
 		.AddSeparator()
@@ -493,10 +510,17 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 	if (fWeatherSettings->UseGeoLocation())
 		builder.AddItem("Refresh GeoLocation", kForceGeoLocationMessage);
 
+	BMenu* helpMenu = NULL;
 	builder
 		.AddSeparator()
+		.AddMenu("Help")
+			.GetMenu(helpMenu)
+			.AddItem("About DeskbarWeather", B_ABOUT_REQUESTED)
+			.AddItem("Open Manual", kHelpMessage).SetEnabled(false)
+			.AddItem("Open Github Page", kGithubMessage)
+		.End()
 		.AddItem("Settings" B_UTF8_ELLIPSIS, kConfigureMessage)
-		.AddItem("Help", kHelpMessage).SetEnabled(false)
+		.AddSeparator()
 		.AddItem("Quit", kQuitMessage);
 
 	// disable items if we have no data to show
@@ -506,11 +530,12 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 	if ((fWeather == NULL || fWeather->Current() == NULL) && forecastItem != NULL)
 		forecastItem->SetEnabled(false);
 
-	popupmenu->SetTargetForItems(this);
+	helpMenu->SetTargetForItems(this);
+	popupMenu->SetTargetForItems(this);
 
-	popupmenu->Go(ConvertToScreen(point), true, true);
+	popupMenu->Go(ConvertToScreen(point), true, true);
 
-	delete popupmenu;
+	delete popupMenu;
 }
 
 

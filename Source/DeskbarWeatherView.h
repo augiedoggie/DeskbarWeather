@@ -12,6 +12,7 @@ enum {
 	kForecastWindowMessage = 'WnGw',
 	kConfigureMessage = 'CfGw',
 	kHelpMessage = 'HpGw',
+	kGithubMessage = 'GhGw',
 	kQuitMessage = 'QuGw',
 	kRefreshMessage = 'RqGw',
 	kForceRefreshMessage = 'FrGw',
