@@ -9,6 +9,7 @@
 #include "SettingsWindow.h"
 #include "WeatherSettings.h"
 
+#include <AboutWindow.h>
 #include <Alert.h>
 #include <Application.h>
 #include <AutoLocker.h>
@@ -205,7 +206,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			_RemoveFromDeskbar();
 			break;
 		case B_ABOUT_REQUESTED:
-			(new BAlert("About", "DeskbarWeather by Chris Roberts", "Cool"))->Go();
+			_AboutRequested();
 			break;
 		default:
 			BView::MessageReceived(message);
@@ -253,6 +254,22 @@ DeskbarWeatherView::Draw(BRect updateRect)
 	DrawString(tempString.String());
 
 	BView::Draw(updateRect);
+}
+
+
+void
+DeskbarWeatherView::_AboutRequested()
+{
+	BAboutWindow* window = new BAboutWindow("DeskbarWeather", kAppMimetype);
+
+	window->AddCopyright(2021, "Chris Roberts");
+
+	const char* authors[] = { "Chris Roberts", NULL };
+	window->AddAuthors(authors);
+
+	//TODO show git revision and architecture
+
+	window->Show();
 }
 
 

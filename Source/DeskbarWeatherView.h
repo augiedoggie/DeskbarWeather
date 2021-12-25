@@ -52,6 +52,7 @@ public:
 	static	BBitmap*	LoadResourceBitmap(const char* name, int32 size);
 
 private:
+			void		_AboutRequested();
 			void		_Init();
 			status_t	_CheckMessageRunner();
 			void		_Configure();

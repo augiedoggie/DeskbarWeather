@@ -9,6 +9,7 @@ set(B_SYSTEM_HEADERS_DIRECTORY ${FINDDIR_OUTPUT} CACHE PATH "")
 
 include_directories(
 	"${B_SYSTEM_HEADERS_DIRECTORY}/private"
+	"${B_SYSTEM_HEADERS_DIRECTORY}/private/interface"
 	"${B_SYSTEM_HEADERS_DIRECTORY}/private/shared"
 	"${B_SYSTEM_HEADERS_DIRECTORY}/private/netservices"
 )
