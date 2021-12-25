@@ -262,12 +262,14 @@ DeskbarWeatherView::_AboutRequested()
 {
 	BAboutWindow* window = new BAboutWindow("DeskbarWeather", kAppMimetype);
 
+	window->AddDescription("A simple Deskbar replicant for displaying weather information.");
+
 	window->AddCopyright(2021, "Chris Roberts");
 
 	const char* authors[] = { "Chris Roberts", NULL };
 	window->AddAuthors(authors);
 
-	//TODO show git revision and architecture
+	//TODO show git hash in the version
 
 	window->Show();
 }
