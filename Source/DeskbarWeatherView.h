@@ -72,7 +72,7 @@ private:
 	BBitmap*				fIcon;
 	BLocker					fLock;
 	BMessageRunner*			fMessageRunner;
-	WeatherSettings*		fWeatherSettings;
+	WeatherSettings*		fSettings;
 };
 
 

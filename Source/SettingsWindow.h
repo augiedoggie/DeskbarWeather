@@ -32,8 +32,8 @@ private:
 			BMenu*		_BuildFontMenu();
 			status_t	_UpdateFontMenu(BMessage* message);
 
-	WeatherSettings*	fWeatherSettings;
-	WeatherSettings*	fWeatherSettingsCache;
+	WeatherSettings*	fSettings;
+	WeatherSettings*	fSettingsCache;
 	BInvoker*			fInvoker;
 	BRadioButton*		fMetricButton;
 	BRadioButton*		fImperialButton;

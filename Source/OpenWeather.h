@@ -52,7 +52,7 @@ private:
 	Condition*				fCurrent;
 	BObjectList<Condition>*	fForecastList;
 	BInvoker*				fInvoker;
-	WeatherSettings*		fWeatherSettings;
+	WeatherSettings*		fSettings;
 	time_t					fLastUpdateTime;
 	BUrl*					fOneUrl;
 	BUrlRequest*			fUrlRequest;

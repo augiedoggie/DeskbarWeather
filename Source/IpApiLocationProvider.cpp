@@ -19,7 +19,7 @@ IpApiLocationProvider::IpApiLocationProvider(WeatherSettings* settings, BInvoker
 	:
 	fInvoker(invoker),
 	fUrlRequest(NULL),
-	fWeatherSettings(settings)
+	fSettings(settings)
 {}
 
 
@@ -73,20 +73,20 @@ IpApiLocationProvider::ParseResult(BMessage& data, bool cacheResult)
 		BString locationStr(bufStr);
 		if (data.FindString("regionName", &bufStr) == B_OK)
 			locationStr << ", " << bufStr;
-		fWeatherSettings->SetLocation(locationStr);
+		fSettings->SetLocation(locationStr);
 	}
 
 	double latitude = data.GetDouble("lat", -999.0);
 	double longitude = data.GetDouble("lon", -999.0);
 
 	if (latitude != -999.0 && longitude != -999.0)
-		fWeatherSettings->SetLocation(latitude, longitude);
+		fSettings->SetLocation(latitude, longitude);
 
 	type_code type;
-	if (fWeatherSettings->GetInfo(kGeoLookupCacheKey, &type) == B_OK)
-		fWeatherSettings->ReplaceMessage(kGeoLookupCacheKey, &data);
+	if (fSettings->GetInfo(kGeoLookupCacheKey, &type) == B_OK)
+		fSettings->ReplaceMessage(kGeoLookupCacheKey, &data);
 	else
-		fWeatherSettings->AddMessage(kGeoLookupCacheKey, &data);
+		fSettings->AddMessage(kGeoLookupCacheKey, &data);
 
 	if (cacheResult)
 		_SaveCache(data);

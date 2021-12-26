@@ -27,7 +27,7 @@ OpenWeather::OpenWeather(WeatherSettings* settings, BInvoker* invoker)
 	fOneUrl(NULL),
 	fOpenWeatherMessage(new BMessage()),
 	fUrlRequest(NULL),
-	fWeatherSettings(settings)
+	fSettings(settings)
 {
 	RebuildRequestUrl();
 }
@@ -55,15 +55,15 @@ OpenWeather::~OpenWeather()
 void
 OpenWeather::RebuildRequestUrl()
 {
-	if (fWeatherSettings->ApiKey() == NULL)
+	if (fSettings->ApiKey() == NULL)
 		return;
 
 	//TODO check if latitude/longitude is set
 
 	bool needRefresh = false;
 	BString urlStr;
-	urlStr.SetToFormat(kOpenWeatherUrl, fWeatherSettings->Latitude(), fWeatherSettings->Longitude(),
-					   fWeatherSettings->ImperialUnits() ? "imperial" : "metric", fWeatherSettings->ApiKey());
+	urlStr.SetToFormat(kOpenWeatherUrl, fSettings->Latitude(), fSettings->Longitude(),
+					   fSettings->ImperialUnits() ? "imperial" : "metric", fSettings->ApiKey());
 
 	if (fOneUrl != NULL) {
 		if (fOneUrl->UrlString() == urlStr)
@@ -274,7 +274,7 @@ OpenWeather::_ParseDay(BMessage& data)
 	condition->SetHumidity(data.GetDouble("humidity", -99.0) / 100);
 	BString bufStr;
 	double windspeed = data.GetDouble("wind_speed", -99.0);
-	if (fWeatherSettings->ImperialUnits())
+	if (fSettings->ImperialUnits())
 		bufStr.SetToFormat("%.1f MPH", windspeed);
 	else
 		bufStr.SetToFormat("%.1f KPH", windspeed);

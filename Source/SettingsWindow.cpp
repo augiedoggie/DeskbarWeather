@@ -43,10 +43,10 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 	fMetricButton(NULL),
 	fNotificationBox(NULL),
 	fShowForecastBox(NULL),
-	fWeatherSettings(prefs),
-	fWeatherSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*prefs)))
+	fSettings(prefs),
+	fSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*prefs)))
 {
-	BTextControl* apiControl = new BTextControl("ApiKeyControl", "API Key:", fWeatherSettings->ApiKey(), NULL);
+	BTextControl* apiControl = new BTextControl("ApiKeyControl", "API Key:", fSettings->ApiKey(), NULL);
 	apiControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
 
 	BPopUpMenu* intervalMenu = new BPopUpMenu("IntervalMenu");
@@ -58,7 +58,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 		.AddItem("Manual refresh only", 999999);
 	fIntervalMenuField = new BMenuField("IntervalMenuField", "Refresh Interval:", intervalMenu);
 
-	fLocationControl = new BTextControl("LocationControl", "Location:", fWeatherSettings->Location(), NULL);
+	fLocationControl = new BTextControl("LocationControl", "Location:", fSettings->Location(), NULL);
 	fLocationControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
 
 	fLocationBox = new BCheckBox("GeoLocationCheckBox", "Use GeoLocation lookup", new BMessage(kGeoCheckboxMessage));
@@ -126,7 +126,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 SettingsWindow::~SettingsWindow()
 {
 	delete fInvoker;
-	delete fWeatherSettingsCache;
+	delete fSettingsCache;
 }
 
 
@@ -139,8 +139,8 @@ SettingsWindow::MessageReceived(BMessage* message)
 		case 60:
 		case 180:
 		case 999999:
-			if (fWeatherSettings->RefreshInterval() != (int32)message->what) {
-				fWeatherSettings->SetRefreshInterval(message->what);
+			if (fSettings->RefreshInterval() != (int32)message->what) {
+				fSettings->SetRefreshInterval(message->what);
 				fInvoker->Invoke();
 			}
 			break;
@@ -150,8 +150,8 @@ SettingsWindow::MessageReceived(BMessage* message)
 			if (value == -1)
 				break;
 
-			if (fWeatherSettings->CompactForecast() != value)
-				fWeatherSettings->SetCompactForecast(value);
+			if (fSettings->CompactForecast() != value)
+				fSettings->SetCompactForecast(value);
 
 			break;
 		}
@@ -168,8 +168,8 @@ SettingsWindow::MessageReceived(BMessage* message)
 			locationControl->SetEnabled(!useGeoCheckbox->Value());
 			fGeoNotificationBox->SetEnabled(useGeoCheckbox->Value());
 
-			if (fWeatherSettings->UseGeoLocation() != useGeoCheckbox->Value()) {
-				fWeatherSettings->SetUseGeoLocation(useGeoCheckbox->Value());
+			if (fSettings->UseGeoLocation() != useGeoCheckbox->Value()) {
+				fSettings->SetUseGeoLocation(useGeoCheckbox->Value());
 				fInvoker->Invoke();
 			}
 			break;
@@ -180,8 +180,8 @@ SettingsWindow::MessageReceived(BMessage* message)
 			if (value == -1)
 				break;
 
-			if (fWeatherSettings->UseGeoNotification() != value)
-				fWeatherSettings->SetUseGeoNotification(value);
+			if (fSettings->UseGeoNotification() != value)
+				fSettings->SetUseGeoNotification(value);
 
 			break;
 		}
@@ -191,10 +191,10 @@ SettingsWindow::MessageReceived(BMessage* message)
 			if (value == -1)
 				break;
 
-			if (fWeatherSettings->UseNotification() != value)
-				fWeatherSettings->SetUseNotification(value);
+			if (fSettings->UseNotification() != value)
+				fSettings->SetUseNotification(value);
 
-			fShowForecastBox->SetEnabled(fWeatherSettings->UseNotification());
+			fShowForecastBox->SetEnabled(fSettings->UseNotification());
 
 			break;
 		}
@@ -204,20 +204,20 @@ SettingsWindow::MessageReceived(BMessage* message)
 			if (value == -1)
 				break;
 
-			if (fWeatherSettings->NotificationClick() != value)
-				fWeatherSettings->SetNotificationClick(value);
+			if (fSettings->NotificationClick() != value)
+				fSettings->SetNotificationClick(value);
 
 			break;
 		}
 		case kImperialMessage:
-			if (!fWeatherSettings->ImperialUnits()) {
-				fWeatherSettings->SetImperialUnits(true);
+			if (!fSettings->ImperialUnits()) {
+				fSettings->SetImperialUnits(true);
 				fInvoker->Invoke();
 			}
 			break;
 		case kMetricMessage:
-			if (fWeatherSettings->ImperialUnits()) {
-				fWeatherSettings->SetImperialUnits(false);
+			if (fSettings->ImperialUnits()) {
+				fSettings->SetImperialUnits(false);
 				fInvoker->Invoke();
 			}
 			break;
@@ -241,44 +241,44 @@ void
 SettingsWindow::_InitControls(bool revert)
 {
 	if (revert) {
-		fWeatherSettings->SetImperialUnits(fWeatherSettingsCache->ImperialUnits());
-		fWeatherSettings->SetUseGeoLocation(fWeatherSettingsCache->UseGeoLocation());
-		fWeatherSettings->SetLocation(fWeatherSettingsCache->Location());
-		fWeatherSettings->SetRefreshInterval(fWeatherSettingsCache->RefreshInterval());
-		fWeatherSettings->SetUseNotification(fWeatherSettingsCache->UseNotification());
-		fWeatherSettings->SetNotificationClick(fWeatherSettingsCache->NotificationClick());
+		fSettings->SetImperialUnits(fSettingsCache->ImperialUnits());
+		fSettings->SetUseGeoLocation(fSettingsCache->UseGeoLocation());
+		fSettings->SetLocation(fSettingsCache->Location());
+		fSettings->SetRefreshInterval(fSettingsCache->RefreshInterval());
+		fSettings->SetUseNotification(fSettingsCache->UseNotification());
+		fSettings->SetNotificationClick(fSettingsCache->NotificationClick());
 		//TODO revert font
 	}
 
-	if (fWeatherSettings->ImperialUnits())
+	if (fSettings->ImperialUnits())
 		fImperialButton->SetValue(1);
 	else
 		fMetricButton->SetValue(1);
 
-	if (fWeatherSettings->UseGeoLocation()) {
+	if (fSettings->UseGeoLocation()) {
 		fLocationBox->SetValue(1);
 		fLocationControl->SetEnabled(false);
 	} else
 		fGeoNotificationBox->SetEnabled(false);
 
-	if (fWeatherSettings->UseGeoNotification())
+	if (fSettings->UseGeoNotification())
 		fGeoNotificationBox->SetValue(1);
 
-	if (fWeatherSettings->NotificationClick())
+	if (fSettings->NotificationClick())
 		fShowForecastBox->SetValue(1);
 
-	if (fWeatherSettings->UseNotification())
+	if (fSettings->UseNotification())
 		fNotificationBox->SetValue(1);
 	else
 		fShowForecastBox->SetEnabled(false);
 
 	BMenu* intervalMenu = fIntervalMenuField->Menu();
-	BMenuItem* selectedItem = intervalMenu->FindItem(fWeatherSettings->RefreshInterval());
+	BMenuItem* selectedItem = intervalMenu->FindItem(fSettings->RefreshInterval());
 	if (selectedItem != NULL)
 		selectedItem->SetMarked(true);
 	//TODO show error?
 
-	if (fWeatherSettings->CompactForecast())
+	if (fSettings->CompactForecast())
 		fCompactBox->SetValue(1);
 
 //	if (revert)
@@ -294,24 +294,24 @@ SettingsWindow::_SaveSettings()
 	BTextControl* control = dynamic_cast<BTextControl*>(FindView("ApiKeyControl"));
 	if (control != NULL) {
 		const char* text = control->Text();
-		if (fWeatherSettings->ApiKey() == NULL) {
+		if (fSettings->ApiKey() == NULL) {
 			if (strlen(text) > 0) {
-				fWeatherSettings->SetApiKey(text);
+				fSettings->SetApiKey(text);
 				needRefresh = true;
 			}
-		} else if (strcmp(fWeatherSettings->ApiKey(), text) != 0) {
+		} else if (strcmp(fSettings->ApiKey(), text) != 0) {
 			if (strlen(text) == 0)
-				fWeatherSettings->SetApiKey(NULL);
+				fSettings->SetApiKey(NULL);
 			else
-				fWeatherSettings->SetApiKey(text);
+				fSettings->SetApiKey(text);
 			needRefresh = true;
 		}
 	}
 
 	control = dynamic_cast<BTextControl*>(FindView("LocationControl"));
 	if (control != NULL) {
-		if (strcmp(fWeatherSettings->Location(), control->Text()) != 0) {
-			fWeatherSettings->SetLocation(control->Text());
+		if (strcmp(fSettings->Location(), control->Text()) != 0) {
+			fSettings->SetLocation(control->Text());
 			needRefresh = true;
 		}
 	}
@@ -327,7 +327,7 @@ BMenu*
 SettingsWindow::_BuildFontMenu()
 {
 	BFont origFont;
-	fWeatherSettings->GetFont(origFont);
+	fSettings->GetFont(origFont);
 	font_family origFamily;
 	font_style origStyle;
 	origFont.GetFamilyAndStyle(&origFamily, &origStyle);
@@ -443,7 +443,7 @@ SettingsWindow::_UpdateFontMenu(BMessage* message)
 	menuLabelStr.SetToFormat("%s - %s - %g", family, style, size);
 	menuField->MenuItem()->SetLabel(menuLabelStr);
 
-	fWeatherSettings->SetFont(family, style, size);
+	fSettings->SetFont(family, style, size);
 	fInvoker->Invoke();
 
 	return B_OK;

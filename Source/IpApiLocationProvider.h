@@ -35,7 +35,7 @@ private:
 			status_t		_LoadCache(BMessage& message);
 
 		BInvoker*			fInvoker;
-		WeatherSettings*	fWeatherSettings;
+		WeatherSettings*	fSettings;
 		BUrlRequest*		fUrlRequest;
 };
 

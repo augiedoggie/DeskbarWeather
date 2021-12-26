@@ -49,7 +49,7 @@ DeskbarWeatherView::DeskbarWeatherView(BRect frame)
 	fLock("weather data lock"),
 	fMessageRunner(NULL),
 	fWeather(NULL),
-	fWeatherSettings(NULL)
+	fSettings(NULL)
 {
 	_Init();
 }
@@ -63,7 +63,7 @@ DeskbarWeatherView::DeskbarWeatherView(BMessage* message)
 	fLock("weather data lock"),
 	fMessageRunner(NULL),
 	fWeather(NULL),
-	fWeatherSettings(NULL)
+	fSettings(NULL)
 {
 	_Init();
 }
@@ -87,7 +87,7 @@ DeskbarWeatherView::~DeskbarWeatherView()
 	delete fMessageRunner;
 	delete fWeather;
 	delete fLocationProvider;
-	delete fWeatherSettings;
+	delete fSettings;
 }
 
 
@@ -123,12 +123,12 @@ DeskbarWeatherView::AttachedToWindow()
 
 	SetLowColor(ViewColor());
 
-	fWeather = new OpenWeather(fWeatherSettings, new BInvoker(new BMessage(kRefreshMessage), this));
+	fWeather = new OpenWeather(fSettings, new BInvoker(new BMessage(kRefreshMessage), this));
 
 	_CheckMessageRunner();
 
-	if (fWeatherSettings->UseGeoLocation()) {
-		fLocationProvider = new IpApiLocationProvider(fWeatherSettings, new BInvoker(new BMessage(kGeoLocationMessage), this));
+	if (fSettings->UseGeoLocation()) {
+		fLocationProvider = new IpApiLocationProvider(fSettings, new BInvoker(new BMessage(kGeoLocationMessage), this));
 		fLocationProvider->Run(); // will force a weather refresh when the reply message arrives
 	} else
 		BMessenger(this).SendMessage(kForceRefreshMessage);
@@ -170,7 +170,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			fWeather->RebuildRequestUrl();
 			_CheckMessageRunner();
 			BFont newFont, oldFont;
-			fWeatherSettings->GetFont(newFont);
+			fSettings->GetFont(newFont);
 			GetFont(&oldFont);
 			if (oldFont != newFont) {
 				//TODO calculate string width and see if we need to restart the replicant to change view size
@@ -244,7 +244,7 @@ DeskbarWeatherView::Draw(BRect updateRect)
 	BString tempString;
 	//TODO fix text being cut off during decimal display in celsius mode
 	if (fWeather != NULL && fWeather->Current() != NULL)
-		if (fWeatherSettings->ImperialUnits())
+		if (fSettings->ImperialUnits())
 			tempString << fWeather->Current()->iTemp() << "°";
 		else
 			tempString.SetToFormat("%.1f°", fWeather->Current()->Temp());
@@ -282,12 +282,12 @@ DeskbarWeatherView::_Init()
 		(new BAlert("Error", "Data lock failed InitCheck()!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 		//TODO exit app
 
-	fWeatherSettings = new WeatherSettings();
+	fSettings = new WeatherSettings();
 
 	fIcon = LoadResourceBitmap("unknown", Bounds().Height() - 1);
 
 	BFont font;
-	if (fWeatherSettings->GetFont(font) == B_OK)
+	if (fSettings->GetFont(font) == B_OK)
 		SetFont(&font);
 }
 
@@ -295,7 +295,7 @@ DeskbarWeatherView::_Init()
 status_t
 DeskbarWeatherView::_CheckMessageRunner()
 {
-	if (fWeatherSettings->ApiKey() == NULL) {
+	if (fSettings->ApiKey() == NULL) {
 		BMessenger(this).SendMessage(kSettingsMessage);
 		SetToolTip("ERROR: API Key not set");
 		return B_ERROR;
@@ -303,7 +303,7 @@ DeskbarWeatherView::_CheckMessageRunner()
 
 	//TODO check if we have a valid location(latitude/longitude)
 
-	if (fWeatherSettings->RefreshInterval() < 0) {
+	if (fSettings->RefreshInterval() < 0) {
 		// automatic refresh is disabled, remove any existing runner and return
 		if (fMessageRunner != NULL) {
 			delete fMessageRunner;
@@ -314,9 +314,9 @@ DeskbarWeatherView::_CheckMessageRunner()
 
 	if (fMessageRunner == NULL) {
 		BMessage bufMsg(kForceRefreshMessage);
-		fMessageRunner = new BMessageRunner(BMessenger(this), &bufMsg, (bigtime_t)fWeatherSettings->RefreshInterval() * 60000000, -1);
+		fMessageRunner = new BMessageRunner(BMessenger(this), &bufMsg, (bigtime_t)fSettings->RefreshInterval() * 60000000, -1);
 	} else
-		fMessageRunner->SetInterval((bigtime_t)fWeatherSettings->RefreshInterval() * 60000000);
+		fMessageRunner->SetInterval((bigtime_t)fSettings->RefreshInterval() * 60000000);
 
 	if (fMessageRunner->InitCheck() == B_OK)
 		return B_OK;
@@ -343,7 +343,7 @@ DeskbarWeatherView::_ShowForecastWindow()
 
 	AutoLocker<BLocker> locker(fLock);
 	if (fWeather != NULL && fWeather->Current() != NULL)
-		new ForecastWindow(fWeather, BRect(100, 100, 500, 300), fWeatherSettings->Location(), fWeatherSettings->CompactForecast());
+		new ForecastWindow(fWeather, BRect(100, 100, 500, 300), fSettings->Location(), fSettings->CompactForecast());
 }
 
 
@@ -359,14 +359,14 @@ DeskbarWeatherView::_ShowSettingsWindow()
 		}
 	}
 
-	new SettingsWindow(fWeatherSettings, new BInvoker(new BMessage(kSettingsChangeMessage), this), BRect(100, 100, 500, 300));
+	new SettingsWindow(fSettings, new BInvoker(new BMessage(kSettingsChangeMessage), this), BRect(100, 100, 500, 300));
 }
 
 
 void
 DeskbarWeatherView::_ForceRefresh()
 {
-	if (fWeatherSettings->ApiKey() == NULL)
+	if (fSettings->ApiKey() == NULL)
 		return;
 
 	//TODO check if we have a valid location(latitude/longitude)
@@ -403,12 +403,12 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 		if (fWeather->ParseResult(*message) != B_OK)
 			//TODO add a more descriptive error message
 			_ShowErrorNotification("Json Parse Error", "There was an error parsing the returned weather data!");
-		else if (fWeatherSettings->UseNotification()) {
+		else if (fSettings->UseNotification()) {
 			BNotification notification(B_INFORMATION_NOTIFICATION);
 			if (notification.InitCheck() == B_OK) {
 				notification.SetGroup("DeskbarWeather");
 				notification.SetTitle("Weather Refresh Complete");
-				BString content(fWeatherSettings->Location());
+				BString content(fSettings->Location());
 				//TODO configurable notification information
 				content << "\n\n" << fWeather->Current()->Forecast()->String() << "\n\n" << fWeather->Current()->Temp() << "°";
 				notification.SetContent(content);
@@ -417,7 +417,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 					notification.SetIcon(bitmap);
 					delete bitmap;
 				}
-				if (fWeatherSettings->NotificationClick()) {
+				if (fSettings->NotificationClick()) {
 					notification.SetOnClickApp(kAppMimetype);
 					notification.AddOnClickArg("--forecast");
 				}
@@ -434,7 +434,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	fWeather->LastUpdate(updateStr);
 	//TODO configurable tooltip information
 	BString tooltip;
-	tooltip << fWeatherSettings->Location() << "\n";
+	tooltip << fSettings->Location() << "\n";
 	tooltip << fWeather->Current()->Forecast()->String() << "\n";
 	tooltip << "High: " << fWeather->Current()->iHigh() << "°\n";
 	tooltip << "Low: " << fWeather->Current()->iLow() << "°\n";
@@ -463,7 +463,7 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		return;
 	}
 
-	if (fWeatherSettings->UseGeoNotification()) {
+	if (fSettings->UseGeoNotification()) {
 		BNotification notification(B_INFORMATION_NOTIFICATION);
 		notification.SetGroup("DeskbarWeather");
 		notification.SetTitle("GeoLocation Refresh Complete");
@@ -473,7 +473,7 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 			delete bitmap;
 		}
 		BString content;
-		content.SetToFormat("%s\n\nLatitude: %.4f\n\nLongitude: %.4f", fWeatherSettings->Location(), fWeatherSettings->Latitude(), fWeatherSettings->Longitude());
+		content.SetToFormat("%s\n\nLatitude: %.4f\n\nLongitude: %.4f", fSettings->Location(), fSettings->Latitude(), fSettings->Longitude());
 		if (message->HasBool(kGeoLookupCacheKey))
 			content << "\n\n(using cached location)";
 		notification.SetContent(content);
@@ -525,9 +525,9 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 		.AddSeparator()
 		.AddItem("Refresh Weather", kForceRefreshMessage)
 			// disable item if we have no weather provider initialized
-			.SetEnabled(fWeather != NULL && fWeatherSettings->ApiKey() != NULL)
+			.SetEnabled(fWeather != NULL && fSettings->ApiKey() != NULL)
 		.AddItem("Refresh GeoLocation", kForceGeoLocationMessage)
-			.SetEnabled(fWeatherSettings->UseGeoLocation())
+			.SetEnabled(fSettings->UseGeoLocation())
 		.AddSeparator()
 		.AddMenu("Help")
 			.GetMenu(helpMenu)
