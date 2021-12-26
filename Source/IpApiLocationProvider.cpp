@@ -15,11 +15,10 @@
 const char* kIpApiUrl = "http://ip-api.com/json/?fields=status,message,lat,lon,country,regionName,city";
 
 
-IpApiLocationProvider::IpApiLocationProvider(WeatherSettings* settings, BInvoker* invoker)
+IpApiLocationProvider::IpApiLocationProvider(BInvoker* invoker)
 	:
 	fInvoker(invoker),
-	fUrlRequest(NULL),
-	fSettings(settings)
+	fUrlRequest(NULL)
 {}
 
 
@@ -38,14 +37,14 @@ IpApiLocationProvider::~IpApiLocationProvider()
 
 
 status_t
-IpApiLocationProvider::Run(bool force)
+IpApiLocationProvider::Run(WeatherSettings* settings, bool force)
 {
 	BMessage geoMsg;
 
 	//TODO check if cache needs to be invalidated and a new lookup performed
 	if (!force) {
 		if (_LoadCache(geoMsg) == B_OK) {
-			if (ParseResult(geoMsg, false) != B_OK)
+			if (ParseResult(geoMsg, settings, false) != B_OK)
 				return B_ERROR;
 
 			if (!geoMsg.HasBool(kGeoLookupCacheKey))
@@ -66,27 +65,27 @@ IpApiLocationProvider::Run(bool force)
 
 
 status_t
-IpApiLocationProvider::ParseResult(BMessage& data, bool cacheResult)
+IpApiLocationProvider::ParseResult(BMessage& data, WeatherSettings* settings, bool cacheResult)
 {
 	BString bufStr;
 	if (data.FindString("city", &bufStr) == B_OK) {
 		BString locationStr(bufStr);
 		if (data.FindString("regionName", &bufStr) == B_OK)
 			locationStr << ", " << bufStr;
-		fSettings->SetLocation(locationStr);
+		settings->SetLocation(locationStr);
 	}
 
 	double latitude = data.GetDouble("lat", -999.0);
 	double longitude = data.GetDouble("lon", -999.0);
 
 	if (latitude != -999.0 && longitude != -999.0)
-		fSettings->SetLocation(latitude, longitude);
+		settings->SetLocation(latitude, longitude);
 
 	type_code type;
-	if (fSettings->GetInfo(kGeoLookupCacheKey, &type) == B_OK)
-		fSettings->ReplaceMessage(kGeoLookupCacheKey, &data);
+	if (settings->GetInfo(kGeoLookupCacheKey, &type) == B_OK)
+		settings->ReplaceMessage(kGeoLookupCacheKey, &data);
 	else
-		fSettings->AddMessage(kGeoLookupCacheKey, &data);
+		settings->AddMessage(kGeoLookupCacheKey, &data);
 
 	if (cacheResult)
 		_SaveCache(data);

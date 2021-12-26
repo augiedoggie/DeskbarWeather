@@ -128,8 +128,8 @@ DeskbarWeatherView::AttachedToWindow()
 	_CheckMessageRunner();
 
 	if (fSettings->UseGeoLocation()) {
-		fLocationProvider = new IpApiLocationProvider(fSettings, new BInvoker(new BMessage(kGeoLocationMessage), this));
-		fLocationProvider->Run(); // will force a weather refresh when the reply message arrives
+		fLocationProvider = new IpApiLocationProvider(new BInvoker(new BMessage(kGeoLocationMessage), this));
+		fLocationProvider->Run(fSettings); // will force a weather refresh when the reply message arrives
 	} else
 		BMessenger(this).SendMessage(kForceRefreshMessage);
 }
@@ -187,9 +187,12 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			_RefreshComplete(message);
 			break;
 		case kForceGeoLocationMessage:
+		{
+			AutoLocker<BLocker> locker(fLock);
 			if (fLocationProvider != NULL)
-				fLocationProvider->Run(true); // will force a weather refresh when the reply message arrives
+				fLocationProvider->Run(fSettings, true); // will force a weather refresh when the reply message arrives
 			break;
+		}
 		case kGeoLocationMessage:
 			_GeoLookupComplete(message);
 			break;
@@ -465,7 +468,8 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		return;
 	}
 
-	if (fLocationProvider->ParseResult(*message) != B_OK) {
+	AutoLocker<BLocker> locker(fLock);
+	if (fLocationProvider->ParseResult(*message, fSettings) != B_OK) {
 		_ShowErrorNotification("GeoLocation Json Parse Error", "There was an error parsing the returned location data!");
 		return;
 	}
