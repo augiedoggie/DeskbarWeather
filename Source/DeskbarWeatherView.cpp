@@ -516,6 +516,7 @@ void
 DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 {
 	AutoLocker<BLocker> locker(fLock);
+	BMenu* helpMenu = NULL;
 	BPopUpMenu* popupMenu = new BPopUpMenu("Menu");
 	BLayoutBuilder::Menu<> builder = BLayoutBuilder::Menu<>(popupMenu)
 		.AddItem("Open Forecast Window", kForecastWindowMessage)
@@ -524,12 +525,9 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 		.AddSeparator()
 		.AddItem("Refresh Weather", kForceRefreshMessage)
 			// disable item if we have no weather provider initialized
-			.SetEnabled(fWeather != NULL)
+			.SetEnabled(fWeather != NULL && fWeatherSettings->ApiKey() != NULL)
 		.AddItem("Refresh GeoLocation", kForceGeoLocationMessage)
-			.SetEnabled(fWeatherSettings->UseGeoLocation());
-
-	BMenu* helpMenu = NULL;
-	builder
+			.SetEnabled(fWeatherSettings->UseGeoLocation())
 		.AddSeparator()
 		.AddMenu("Help")
 			.GetMenu(helpMenu)
