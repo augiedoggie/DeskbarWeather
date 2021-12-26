@@ -166,6 +166,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			break;
 		case kSettingsChangeMessage:
 		{
+			AutoLocker<BLocker> locker(fLock);
 			//TODO check for geolocation status change
 			fWeather->RebuildRequestUrl();
 			_CheckMessageRunner();
@@ -295,6 +296,10 @@ DeskbarWeatherView::_Init()
 status_t
 DeskbarWeatherView::_CheckMessageRunner()
 {
+	// verify our data is already locked
+	if (!fLock.IsLocked())
+		return B_ERROR;
+
 	if (fSettings->ApiKey() == NULL) {
 		BMessenger(this).SendMessage(kSettingsMessage);
 		SetToolTip("ERROR: API Key not set");
@@ -359,6 +364,7 @@ DeskbarWeatherView::_ShowSettingsWindow()
 		}
 	}
 
+	AutoLocker<BLocker> locker(fLock);
 	new SettingsWindow(fSettings, new BInvoker(new BMessage(kSettingsChangeMessage), this), BRect(100, 100, 500, 300));
 }
 
@@ -366,6 +372,7 @@ DeskbarWeatherView::_ShowSettingsWindow()
 void
 DeskbarWeatherView::_ForceRefresh()
 {
+	AutoLocker<BLocker> locker(fLock);
 	if (fSettings->ApiKey() == NULL)
 		return;
 
