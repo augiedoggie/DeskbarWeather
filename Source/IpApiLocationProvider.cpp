@@ -81,12 +81,6 @@ IpApiLocationProvider::ParseResult(BMessage& data, WeatherSettings* settings, bo
 	if (latitude != -999.0 && longitude != -999.0)
 		settings->SetLocation(latitude, longitude);
 
-	type_code type;
-	if (settings->GetInfo(kGeoLookupCacheKey, &type) == B_OK)
-		settings->ReplaceMessage(kGeoLookupCacheKey, &data);
-	else
-		settings->AddMessage(kGeoLookupCacheKey, &data);
-
 	if (cacheResult)
 		_SaveCache(data);
 

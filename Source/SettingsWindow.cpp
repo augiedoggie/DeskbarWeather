@@ -29,7 +29,7 @@ enum {
 };
 
 
-SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect frame)
+SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRect frame)
 	:
 	BWindow(frame, "DeskbarWeather Preferences", B_FLOATING_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
 			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
@@ -43,8 +43,9 @@ SettingsWindow::SettingsWindow(WeatherSettings* prefs, BInvoker* invoker, BRect 
 	fMetricButton(NULL),
 	fNotificationBox(NULL),
 	fShowForecastBox(NULL),
-	fSettings(prefs),
-	fSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*prefs)))
+	//TODO copy the settings message instead of manipulating the original
+	fSettings(settings),
+	fSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*settings)))
 {
 	BTextControl* apiControl = new BTextControl("ApiKeyControl", "API Key:", fSettings->ApiKey(), NULL);
 	apiControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
