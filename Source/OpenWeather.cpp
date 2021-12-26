@@ -21,15 +21,13 @@ OpenWeather::OpenWeather(WeatherSettings* settings, BInvoker* invoker)
 	:
 	fCurrent(NULL),
 	fForecastList(NULL),
-	fGeoMessage(new BMessage()),
 	fInvoker(invoker),
 	fLastUpdateTime(-1),
 	fOneUrl(NULL),
 	fOpenWeatherMessage(new BMessage()),
-	fUrlRequest(NULL),
-	fSettings(settings)
+	fUrlRequest(NULL)
 {
-	RebuildRequestUrl();
+	RebuildRequestUrl(settings);
 }
 
 
@@ -45,7 +43,6 @@ OpenWeather::~OpenWeather()
 	delete fUrlRequest;
 	delete fCurrent;
 	delete fForecastList;
-	delete fGeoMessage;
 	delete fInvoker;
 	delete fOneUrl;
 	delete fOpenWeatherMessage;
@@ -53,17 +50,17 @@ OpenWeather::~OpenWeather()
 
 
 void
-OpenWeather::RebuildRequestUrl()
+OpenWeather::RebuildRequestUrl(WeatherSettings* settings)
 {
-	if (fSettings->ApiKey() == NULL)
+	if (settings->ApiKey() == NULL)
 		return;
 
 	//TODO check if latitude/longitude is set
 
 	bool needRefresh = false;
 	BString urlStr;
-	urlStr.SetToFormat(kOpenWeatherUrl, fSettings->Latitude(), fSettings->Longitude(),
-					   fSettings->ImperialUnits() ? "imperial" : "metric", fSettings->ApiKey());
+	urlStr.SetToFormat(kOpenWeatherUrl, settings->Latitude(), settings->Longitude(),
+					   settings->ImperialUnits() ? "imperial" : "metric", settings->ApiKey());
 
 	if (fOneUrl != NULL) {
 		if (fOneUrl->UrlString() == urlStr)
@@ -129,7 +126,7 @@ OpenWeather::Forecast()
 
 
 status_t
-OpenWeather::ParseResult(BMessage& data)
+OpenWeather::ParseResult(BMessage& data, WeatherSettings* settings)
 {
 	fOpenWeatherMessage->MakeEmpty();
 	*fOpenWeatherMessage = data;
@@ -146,13 +143,13 @@ OpenWeather::ParseResult(BMessage& data)
 
 	BMessage currentMsg;
 	if (fOpenWeatherMessage->FindMessage("current", &currentMsg) == B_OK)
-		fCurrent = _ParseDay(currentMsg);
+		fCurrent = _ParseDay(currentMsg, settings->ImperialUnits());
 
 	fLastUpdateTime = fCurrent->Day();
 
 	BMessage dailyMsg;
 	if (fOpenWeatherMessage->FindMessage("daily", &dailyMsg) == B_OK)
-		_ParseForecast(dailyMsg);
+		_ParseForecast(dailyMsg, settings->ImperialUnits());
 
 	return B_OK;
 }
@@ -236,7 +233,7 @@ OpenWeather::_ResetConditions()
 
 
 status_t
-OpenWeather::_ParseForecast(BMessage& data)
+OpenWeather::_ParseForecast(BMessage& data, bool imperial)
 {
 	fForecastList = new BObjectList<Condition>(6, true);
 
@@ -257,7 +254,7 @@ OpenWeather::_ParseForecast(BMessage& data)
 
 		BMessage dayMsg;
 		if (data.FindMessage(dayStr, &dayMsg) == B_OK)
-			fForecastList->AddItem(_ParseDay(dayMsg));
+			fForecastList->AddItem(_ParseDay(dayMsg, imperial));
 	}
 
 	return B_OK;
@@ -265,7 +262,7 @@ OpenWeather::_ParseForecast(BMessage& data)
 
 
 Condition*
-OpenWeather::_ParseDay(BMessage& data)
+OpenWeather::_ParseDay(BMessage& data, bool imperial)
 {
 	Condition* condition = new Condition();
 	condition->SetDay(data.GetDouble("dt", -99999));
@@ -274,7 +271,7 @@ OpenWeather::_ParseDay(BMessage& data)
 	condition->SetHumidity(data.GetDouble("humidity", -99.0) / 100);
 	BString bufStr;
 	double windspeed = data.GetDouble("wind_speed", -99.0);
-	if (fSettings->ImperialUnits())
+	if (imperial)
 		bufStr.SetToFormat("%.1f MPH", windspeed);
 	else
 		bufStr.SetToFormat("%.1f KPH", windspeed);

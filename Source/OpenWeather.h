@@ -28,31 +28,29 @@ class OpenWeather {
 
 public:
 
-						OpenWeather(WeatherSettings* prefs, BInvoker* invoker);
+						OpenWeather(WeatherSettings* settings, BInvoker* invoker);
 						~OpenWeather();
 
 	status_t			Refresh();
-	void				RebuildRequestUrl();
+	void				RebuildRequestUrl(WeatherSettings* settings);
 	BInvoker*			Invoker();
 	Condition*			Current();
 	status_t			LastUpdate(BString& output, bool longFormat = false);
 	BObjectList<Condition>*	Forecast();
-	status_t			ParseResult(BMessage& data);
+	status_t			ParseResult(BMessage& data, WeatherSettings* settings);
 
 private:
 
 	status_t			_ParseCurrent(BMessage& data);
-	Condition*			_ParseDay(BMessage& data);
-	status_t			_ParseForecast(BMessage& data);
+	Condition*			_ParseDay(BMessage& data, bool imperial);
+	status_t			_ParseForecast(BMessage& data, bool imperial);
 	void				_ResetConditions();
 	void				_SetUpdateTime(bigtime_t);
 
-	BMessage*				fGeoMessage;
 	BMessage*				fOpenWeatherMessage;
 	Condition*				fCurrent;
 	BObjectList<Condition>*	fForecastList;
 	BInvoker*				fInvoker;
-	WeatherSettings*		fSettings;
 	time_t					fLastUpdateTime;
 	BUrl*					fOneUrl;
 	BUrlRequest*			fUrlRequest;
