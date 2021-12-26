@@ -9,10 +9,8 @@
 #include "SettingsWindow.h"
 #include "WeatherSettings.h"
 
-#include <AboutWindow.h>
 #include <Alert.h>
 #include <Application.h>
-#include <AutoLocker.h>
 #include <Bitmap.h>
 #include <Deskbar.h>
 #include <IconUtils.h>
@@ -24,7 +22,11 @@
 #include <PopUpMenu.h>
 #include <Resources.h>
 #include <Roster.h>
+
+// use full paths to make clang autocompletion happy
+#include <private/interface/AboutWindow.h>
 #include <private/netservices/HttpRequest.h>
+#include <private/shared/AutoLocker.h>
 
 
 using namespace BPrivate::Network;
@@ -352,6 +354,7 @@ DeskbarWeatherView::_ShowForecastWindow()
 
 	AutoLocker<BLocker> locker(fLock);
 	if (fWeather != NULL && fWeather->Current() != NULL)
+		//TODO save/restore window position
 		new ForecastWindow(fWeather, BRect(100, 100, 500, 300), fSettings->Location(), fSettings->CompactForecast());
 }
 
@@ -469,13 +472,14 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		return;
 	}
 
-	AutoLocker<BLocker> locker(fLock);
 	BString location;
 	double latitude, longitude;
 	if (fLocationProvider->ParseResult(*message, location, &latitude, &longitude) != B_OK) {
 		_ShowErrorNotification("GeoLocation Json Parse Error", "There was an error parsing the returned location data!");
 		return;
 	}
+
+	AutoLocker<BLocker> locker(fLock);
 
 	fSettings->SetLocation(latitude, longitude);
 
@@ -492,7 +496,7 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 			delete bitmap;
 		}
 		BString content;
-		content.SetToFormat("%s\n\nLatitude: %.4f\n\nLongitude: %.4f", fSettings->Location(), fSettings->Latitude(), fSettings->Longitude());
+		content.SetToFormat("%s\n\nLatitude: %.4f\n\nLongitude: %.4f", location.String(), latitude, longitude);
 		if (message->HasBool(kGeoLookupCacheKey))
 			content << "\n\n(using cached location)";
 		notification.SetContent(content);
