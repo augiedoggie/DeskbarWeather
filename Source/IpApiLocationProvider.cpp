@@ -3,7 +3,6 @@
 
 #include "IpApiLocationProvider.h"
 #include "JsonRequest.h"
-#include "WeatherSettings.h"
 
 #include <File.h>
 #include <FindDirectory.h>
@@ -37,16 +36,13 @@ IpApiLocationProvider::~IpApiLocationProvider()
 
 
 status_t
-IpApiLocationProvider::Run(WeatherSettings* settings, bool force)
+IpApiLocationProvider::Run(bool force)
 {
 	BMessage geoMsg;
 
 	//TODO check if cache needs to be invalidated and a new lookup performed
 	if (!force) {
 		if (_LoadCache(geoMsg) == B_OK) {
-			if (ParseResult(geoMsg, settings, false) != B_OK)
-				return B_ERROR;
-
 			if (!geoMsg.HasBool(kGeoLookupCacheKey))
 				geoMsg.AddBool(kGeoLookupCacheKey, true);
 
@@ -65,21 +61,24 @@ IpApiLocationProvider::Run(WeatherSettings* settings, bool force)
 
 
 status_t
-IpApiLocationProvider::ParseResult(BMessage& data, WeatherSettings* settings, bool cacheResult)
+IpApiLocationProvider::ParseResult(BMessage& data, BString& name, double* latitude, double* longitude, bool cacheResult)
 {
+	if (latitude == NULL || longitude == NULL)
+		return B_ERROR;
+
 	BString bufStr;
 	if (data.FindString("city", &bufStr) == B_OK) {
 		BString locationStr(bufStr);
 		if (data.FindString("regionName", &bufStr) == B_OK)
 			locationStr << ", " << bufStr;
-		settings->SetLocation(locationStr);
+		name = locationStr;
 	}
 
-	double latitude = data.GetDouble("lat", -999.0);
-	double longitude = data.GetDouble("lon", -999.0);
+	*latitude = data.GetDouble("lat", -999.0);
+	*longitude = data.GetDouble("lon", -999.0);
 
-	if (latitude != -999.0 && longitude != -999.0)
-		settings->SetLocation(latitude, longitude);
+	if (*latitude == -999.0 || *longitude == -999.0)
+		return B_ERROR;
 
 	if (cacheResult)
 		_SaveCache(data);

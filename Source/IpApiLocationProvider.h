@@ -6,10 +6,10 @@
 
 #include <SupportDefs.h>
 
-class WeatherSettings;
 
 class BInvoker;
 class BMessage;
+class BString;
 namespace BPrivate {
 	namespace Network {
 		class BUrlRequest;
@@ -27,8 +27,8 @@ public:
 							IpApiLocationProvider(BInvoker* invoker);
 							~IpApiLocationProvider();
 
-			status_t		Run(WeatherSettings* settings, bool force = false);
-			status_t		ParseResult(BMessage& data, WeatherSettings* settings, bool cacheResult = true);
+			status_t		Run(bool force = false);
+			status_t		ParseResult(BMessage& data, BString& name, double* latitude, double* longitude, bool cacheResult = true);
 
 private:
 			status_t		_SaveCache(BMessage& message);
