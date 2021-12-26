@@ -161,8 +161,8 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 		case kForecastWindowMessage:
 			_ShowForecastWindow();
 			break;
-		case kConfigureMessage:
-			_ShowConfigureWindow();
+		case kSettingsMessage:
+			_ShowSettingsWindow();
 			break;
 		case kSettingsChangeMessage:
 		{
@@ -296,7 +296,7 @@ status_t
 DeskbarWeatherView::_CheckMessageRunner()
 {
 	if (fWeatherSettings->ApiKey() == NULL) {
-		BMessenger(this).SendMessage(kConfigureMessage);
+		BMessenger(this).SendMessage(kSettingsMessage);
 		SetToolTip("ERROR: API Key not set");
 		return B_ERROR;
 	}
@@ -348,7 +348,7 @@ DeskbarWeatherView::_ShowForecastWindow()
 
 
 void
-DeskbarWeatherView::_ShowConfigureWindow()
+DeskbarWeatherView::_ShowSettingsWindow()
 {
 	// check if we have an existing settings window and activate it
 	for (int32 x = 0; x < be_app->CountWindows(); x++) {
@@ -538,7 +538,7 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 				.SetEnabled(false)  //TODO write help documentation
 			.AddItem("Open Github Page", kGithubMessage)
 		.End()
-		.AddItem("Settings" B_UTF8_ELLIPSIS, kConfigureMessage)
+		.AddItem("Preferences" B_UTF8_ELLIPSIS, kSettingsMessage)
 		.AddSeparator()
 		.AddItem("Quit", kQuitMessage);
 

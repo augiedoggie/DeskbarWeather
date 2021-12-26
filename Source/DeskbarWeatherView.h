@@ -10,7 +10,7 @@
 
 enum {
 	kForecastWindowMessage = 'WnGw',
-	kConfigureMessage = 'CfGw',
+	kSettingsMessage = 'CfGw',
 	kHelpMessage = 'HpGw',
 	kGithubMessage = 'GhGw',
 	kQuitMessage = 'QuGw',
@@ -64,7 +64,7 @@ private:
 			void		_OpenFolder();
 			void		_ShowErrorNotification(const char* title, const char* content);
 			void		_ShowForecastWindow();
-			void		_ShowConfigureWindow();
+			void		_ShowSettingsWindow();
 			void		_ForceRefresh();
 
 	IpApiLocationProvider*	fLocationProvider;
