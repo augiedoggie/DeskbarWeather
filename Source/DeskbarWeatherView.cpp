@@ -123,7 +123,8 @@ DeskbarWeatherView::AttachedToWindow()
 
 	SetLowColor(ViewColor());
 
-	fWeather = new OpenWeather(fSettings, new BInvoker(new BMessage(kRefreshMessage), this));
+	fWeather = new OpenWeather(fSettings->ApiKey(), fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits(),
+								new BInvoker(new BMessage(kRefreshMessage), this));
 
 	_CheckMessageRunner();
 
@@ -168,7 +169,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 		{
 			AutoLocker<BLocker> locker(fLock);
 			//TODO check for geolocation status change
-			fWeather->RebuildRequestUrl(fSettings);
+			fWeather->RebuildRequestUrl(fSettings->ApiKey(), fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits());
 			_CheckMessageRunner();
 			BFont newFont, oldFont;
 			fSettings->GetFont(newFont);
@@ -410,7 +411,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	BString response(message->GetString("re:message", "BMessage Error"));
 
 	if (BHttpRequest::IsSuccessStatusCode(status)) {
-		if (fWeather->ParseResult(*message, fSettings) != B_OK)
+		if (fWeather->ParseResult(*message, fSettings->ImperialUnits()) != B_OK)
 			//TODO add a more descriptive error message
 			_ShowErrorNotification("Json Parse Error", "There was an error parsing the returned weather data!");
 		else if (fSettings->UseNotification()) {

@@ -21,23 +21,21 @@ namespace BPrivate {
 
 using namespace BPrivate::Network;
 
-class WeatherSettings;
-
 
 class OpenWeather {
 
 public:
 
-						OpenWeather(WeatherSettings* settings, BInvoker* invoker);
+						OpenWeather(const char* apikey, double latitude, double longitude, bool imperial, BInvoker* invoker);
 						~OpenWeather();
 
 	status_t			Refresh();
-	void				RebuildRequestUrl(WeatherSettings* settings);
+	void				RebuildRequestUrl(const char* apikey, double latitude, double longitude, bool imperial);
 	BInvoker*			Invoker();
 	Condition*			Current();
 	status_t			LastUpdate(BString& output, bool longFormat = false);
 	BObjectList<Condition>*	Forecast();
-	status_t			ParseResult(BMessage& data, WeatherSettings* settings);
+	status_t			ParseResult(BMessage& data, bool imperial);
 
 private:
 

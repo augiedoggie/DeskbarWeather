@@ -4,7 +4,6 @@
 #include "OpenWeather.h"
 #include "Condition.h"
 #include "JsonRequest.h"
-#include "WeatherSettings.h"
 
 #include <DateTimeFormat.h>
 #include <File.h>
@@ -17,7 +16,7 @@
 const char* kOpenWeatherUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=%f&lon=%f&exclude=minutely,hourly&units=%s&appid=%s";
 
 
-OpenWeather::OpenWeather(WeatherSettings* settings, BInvoker* invoker)
+OpenWeather::OpenWeather(const char* apikey, double latitude, double longitude, bool imperial, BInvoker* invoker)
 	:
 	fCurrent(NULL),
 	fForecastList(NULL),
@@ -27,7 +26,7 @@ OpenWeather::OpenWeather(WeatherSettings* settings, BInvoker* invoker)
 	fOpenWeatherMessage(new BMessage()),
 	fUrlRequest(NULL)
 {
-	RebuildRequestUrl(settings);
+	RebuildRequestUrl(apikey, latitude, longitude, imperial);
 }
 
 
@@ -50,17 +49,17 @@ OpenWeather::~OpenWeather()
 
 
 void
-OpenWeather::RebuildRequestUrl(WeatherSettings* settings)
+OpenWeather::RebuildRequestUrl(const char* apikey, double latitude, double longitude, bool imperial)
 {
-	if (settings->ApiKey() == NULL)
+	if (apikey == NULL)
 		return;
 
 	//TODO check if latitude/longitude is set
 
 	bool needRefresh = false;
 	BString urlStr;
-	urlStr.SetToFormat(kOpenWeatherUrl, settings->Latitude(), settings->Longitude(),
-					   settings->ImperialUnits() ? "imperial" : "metric", settings->ApiKey());
+	urlStr.SetToFormat(kOpenWeatherUrl, latitude, longitude,
+					   imperial ? "imperial" : "metric", apikey);
 
 	if (fOneUrl != NULL) {
 		if (fOneUrl->UrlString() == urlStr)
@@ -126,7 +125,7 @@ OpenWeather::Forecast()
 
 
 status_t
-OpenWeather::ParseResult(BMessage& data, WeatherSettings* settings)
+OpenWeather::ParseResult(BMessage& data, bool imperial)
 {
 	fOpenWeatherMessage->MakeEmpty();
 	*fOpenWeatherMessage = data;
@@ -143,13 +142,13 @@ OpenWeather::ParseResult(BMessage& data, WeatherSettings* settings)
 
 	BMessage currentMsg;
 	if (fOpenWeatherMessage->FindMessage("current", &currentMsg) == B_OK)
-		fCurrent = _ParseDay(currentMsg, settings->ImperialUnits());
+		fCurrent = _ParseDay(currentMsg, imperial);
 
 	fLastUpdateTime = fCurrent->Day();
 
 	BMessage dailyMsg;
 	if (fOpenWeatherMessage->FindMessage("daily", &dailyMsg) == B_OK)
-		_ParseForecast(dailyMsg, settings->ImperialUnits());
+		_ParseForecast(dailyMsg, imperial);
 
 	return B_OK;
 }
