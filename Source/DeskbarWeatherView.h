@@ -63,7 +63,7 @@ private:
 			void		_OpenWebSite();
 			void		_OpenFolder();
 			void		_ShowErrorNotification(const char* title, const char* content);
-			void		_ShowForecastWindow();
+			void		_ShowForecastWindow(bool toggle = false);
 			void		_ShowSettingsWindow();
 			void		_ForceRefresh();
 

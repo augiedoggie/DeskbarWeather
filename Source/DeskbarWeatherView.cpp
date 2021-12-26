@@ -151,7 +151,7 @@ DeskbarWeatherView::MouseDown(BPoint point)
 		return;
 
 	if (buttons == B_PRIMARY_MOUSE_BUTTON)
-		_ShowForecastWindow();
+		_ShowForecastWindow(true);
 	else
 		_ShowPopUpMenu(point);
 }
@@ -341,13 +341,18 @@ DeskbarWeatherView::_CheckMessageRunner()
 
 
 void
-DeskbarWeatherView::_ShowForecastWindow()
+DeskbarWeatherView::_ShowForecastWindow(bool toggle)
 {
 	// check if we have an existing forecast window and activate it
 	for (int32 x = 0; x < be_app->CountWindows(); x++) {
 		ForecastWindow* window = dynamic_cast<ForecastWindow*>(be_app->WindowAt(x));
 		if (window != NULL) {
-			window->Activate();
+			if (toggle && window->IsActive())
+				// only quit if we're already the frontmost window
+				window->Quit();
+			else
+				window->Activate();
+
 			return;
 		}
 	}
