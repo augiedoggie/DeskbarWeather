@@ -70,7 +70,6 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BLocker& lock, BInvoke
 	fLocationBox->SetEnabled(false); // disable until we have working geocoding
 
 	BStringView* unitsView = new BStringView("UnitStringView", "Units:");
-//	unitsView->SetExplicitAlignment(BAlignment(B_ALIGN_RIGHT, B_ALIGN_VERTICAL_UNSET));
 
 	fImperialButton = new BRadioButton("ImperialRadio", "Imperial", new BMessage(kImperialMessage));
 	fMetricButton = new BRadioButton("MetricRadio", "Metric", new BMessage(kMetricMessage));
@@ -85,6 +84,9 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BLocker& lock, BInvoke
 
 	fCompactBox = new BCheckBox("CompactForecastBox", "Use compact forecast window", new BMessage(kCompactCheckboxMessage));
 
+	BButton* closeButton = new BButton("CloseButton", "Close", new BMessage(kCloseButtonMessage));
+	closeButton->MakeDefault(true);
+
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddGrid(0.0, B_USE_HALF_ITEM_INSETS)
@@ -95,7 +97,6 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BLocker& lock, BInvoke
 			.AddTextControl(fLocationControl, 0, 4, B_ALIGN_RIGHT)
 			.Add(fLocationBox, 1, 5)
 			.Add(fGeoNotificationBox, 1, 6)
-//			.Add(BSpaceLayoutItem::CreateGlue(), 0, 4, 1, 1)
 			.AddGroup(B_HORIZONTAL, 0.0, 0, 7, 1, 1)
 				.SetExplicitAlignment(BAlignment(B_ALIGN_RIGHT, B_ALIGN_MIDDLE))
 				.Add(unitsView)
@@ -109,13 +110,11 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BLocker& lock, BInvoke
 			.End()
 			.AddMenuField(fontMenuField, 0, 8, B_ALIGN_RIGHT)
 			.Add(fCompactBox, 1, 9)
-//			.Add(BSpaceLayoutItem::CreateGlue(), 2, 0, 1, 5)
 		.End()
 		.AddGlue()
 		.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING)
-//			.AddGlue()
 			.Add(new BButton("RevertButton", "Revert", new BMessage(kRevertButtonMessage)))
-			.Add(new BButton("CloseButton", "Close", new BMessage(kCloseButtonMessage)))
+			.Add(closeButton)
 		.End()
 		.End();
 
