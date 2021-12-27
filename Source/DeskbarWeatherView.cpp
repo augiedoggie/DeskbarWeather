@@ -376,8 +376,7 @@ DeskbarWeatherView::_ShowSettingsWindow()
 		}
 	}
 
-	AutoLocker<BLocker> locker(fLock);
-	new SettingsWindow(fSettings, new BInvoker(new BMessage(kSettingsChangeMessage), this), BRect(100, 100, 500, 300));
+	new SettingsWindow(fSettings, fLock, new BInvoker(new BMessage(kSettingsChangeMessage), this), BRect(100, 100, 500, 300));
 }
 
 

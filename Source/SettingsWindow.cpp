@@ -14,6 +14,8 @@
 #include <RadioButton.h>
 #include <StringView.h>
 
+#include <private/shared/AutoLocker.h>
+
 
 enum {
 	kFontMessage					= 'DwFc',
@@ -24,12 +26,12 @@ enum {
 	kShowForecastCheckboxMessage	= 'RnSf',
 	kGeoNotificationCheckboxMessage	= 'GcGn',
 	kRevertButtonMessage			= 'GcRv',
-	kSaveButtonMessage				= 'GcSv',
+	kCloseButtonMessage				= 'GcCl',
 	kCompactCheckboxMessage			= 'DwCc'
 };
 
 
-SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRect frame)
+SettingsWindow::SettingsWindow(WeatherSettings* settings, BLocker& lock, BInvoker* invoker, BRect frame)
 	:
 	BWindow(frame, "DeskbarWeather Preferences", B_FLOATING_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
 			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
@@ -40,13 +42,15 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 	fInvoker(invoker),
 	fLocationBox(NULL),
 	fLocationControl(NULL),
+	fLock(&lock),
 	fMetricButton(NULL),
 	fNotificationBox(NULL),
 	fShowForecastBox(NULL),
-	//TODO copy the settings message instead of manipulating the original
 	fSettings(settings),
 	fSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*settings)))
 {
+	AutoLocker<BLocker> locker(fLock);
+
 	BTextControl* apiControl = new BTextControl("ApiKeyControl", "API Key:", fSettings->ApiKey(), NULL);
 	apiControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
 
@@ -111,7 +115,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 		.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING)
 //			.AddGlue()
 			.Add(new BButton("RevertButton", "Revert", new BMessage(kRevertButtonMessage)))
-			.Add(new BButton("CloseButton", "Close", new BMessage(kSaveButtonMessage)))
+			.Add(new BButton("CloseButton", "Close", new BMessage(kCloseButtonMessage)))
 		.End()
 		.End();
 
@@ -140,13 +144,17 @@ SettingsWindow::MessageReceived(BMessage* message)
 		case 60:
 		case 180:
 		case 999999:
+		{
+			AutoLocker<BLocker> locker(fLock);
 			if (fSettings->RefreshInterval() != (int32)message->what) {
 				fSettings->SetRefreshInterval(message->what);
 				fInvoker->Invoke();
 			}
 			break;
+		}
 		case kCompactCheckboxMessage:
 		{
+			AutoLocker<BLocker> locker(fLock);
 			int32 value = message->GetInt32("be:value", -1);
 			if (value == -1)
 				break;
@@ -158,6 +166,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kGeoCheckboxMessage:
 		{
+			AutoLocker<BLocker> locker(fLock);
 			BCheckBox* useGeoCheckbox = dynamic_cast<BCheckBox*>(FindView("GeoLocationCheckBox"));
 			if (useGeoCheckbox == NULL)
 				return;
@@ -177,6 +186,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kGeoNotificationCheckboxMessage:
 		{
+			AutoLocker<BLocker> locker(fLock);
 			int32 value = message->GetInt32("be:value", -1);
 			if (value == -1)
 				break;
@@ -188,6 +198,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kNotificationCheckboxMessage:
 		{
+			AutoLocker<BLocker> locker(fLock);
 			int32 value = message->GetInt32("be:value", -1);
 			if (value == -1)
 				break;
@@ -201,6 +212,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kShowForecastCheckboxMessage:
 		{
+			AutoLocker<BLocker> locker(fLock);
 			int32 value = message->GetInt32("be:value", -1);
 			if (value == -1)
 				break;
@@ -211,27 +223,44 @@ SettingsWindow::MessageReceived(BMessage* message)
 			break;
 		}
 		case kImperialMessage:
+		{
+			AutoLocker<BLocker> locker(fLock);
 			if (!fSettings->ImperialUnits()) {
 				fSettings->SetImperialUnits(true);
 				fInvoker->Invoke();
 			}
 			break;
+		}
 		case kMetricMessage:
+		{
+			AutoLocker<BLocker> locker(fLock);
 			if (fSettings->ImperialUnits()) {
 				fSettings->SetImperialUnits(false);
 				fInvoker->Invoke();
 			}
 			break;
+		}
 		case kFontMessage:
+		{
+			AutoLocker<BLocker> locker(fLock);
 			if (_UpdateFontMenu(message) != B_OK)
 				(new BAlert("Error", "Font Error!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 			break;
-		case kSaveButtonMessage:
+		}
+		case kCloseButtonMessage:
+		{
+			AutoLocker<BLocker> locker(fLock);
 			_SaveSettings();
+			locker.Unlock();
+			Quit();
 			break;
+		}
 		case kRevertButtonMessage:
+		{
+			AutoLocker<BLocker> locker(fLock);
 			_InitControls(true);
 			break;
+		}
 		default:
 			BWindow::MessageReceived(message);
 	}
@@ -248,7 +277,7 @@ SettingsWindow::_InitControls(bool revert)
 		fSettings->SetRefreshInterval(fSettingsCache->RefreshInterval());
 		fSettings->SetUseNotification(fSettingsCache->UseNotification());
 		fSettings->SetNotificationClick(fSettingsCache->NotificationClick());
-		//TODO revert font
+		//TODO revert font & api key
 	}
 
 	if (fSettings->ImperialUnits())
@@ -319,8 +348,6 @@ SettingsWindow::_SaveSettings()
 
 	if (needRefresh)
 		fInvoker->Invoke();
-
-	Quit();
 }
 
 
