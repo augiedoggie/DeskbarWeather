@@ -145,6 +145,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 			AutoLocker<WeatherSettings> slocker(fSettings);
 			if (fSettings->RefreshInterval() != (int32)message->what) {
 				fSettings->SetRefreshInterval(message->what);
+				//TODO only invoke if we switch from manual to automatic?
 				fInvoker->Invoke();
 			}
 			break;
@@ -472,7 +473,10 @@ SettingsWindow::_UpdateFontMenu(BMessage* message)
 	menuField->MenuItem()->SetLabel(menuLabelStr);
 
 	fSettings->SetFont(family, style, size);
-	fInvoker->Invoke();
+
+	BMessage copy(*fInvoker->Message());
+	copy.AddBool("skiprefresh", true);
+	fInvoker->Invoke(&copy);
 
 	return B_OK;
 }

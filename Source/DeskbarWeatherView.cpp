@@ -171,9 +171,13 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 		{
 			AutoLocker<BLocker> locker(fLock);
 			AutoLocker<WeatherSettings> slocker(fSettings);
-			//TODO check for geolocation status change
-			fWeather->RebuildRequestUrl(fSettings->ApiKey(), fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits());
-			_CheckMessageRunner();
+			if (!message->HasBool("skiprefresh")) {
+				// something changed and we need a new location/weather request
+				//TODO check for geolocation status change
+				fWeather->RebuildRequestUrl(fSettings->ApiKey(), fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits());
+				_CheckMessageRunner();
+			}
+
 			BFont newFont, oldFont;
 			fSettings->GetFont(newFont);
 			GetFont(&oldFont);
@@ -182,6 +186,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 				SetFont(&newFont);
 				Invalidate();
 			}
+
 			break;
 		}
 		case kForceRefreshMessage:
