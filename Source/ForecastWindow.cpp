@@ -156,10 +156,10 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 	forecastBox->SetLabel("Forecast");
 	forecastBox->AddChild(forecastView);
 
-	BLayoutBuilder::Group<>(this, B_VERTICAL)
+	BLayoutBuilder::Group<>(this, B_VERTICAL, compact ? 0 : B_USE_SMALL_SPACING)
 		.Add(currentBox)
 		.Add(forecastBox)
-		.SetInsets(5);
+		.SetInsets(compact ? 1 : B_USE_HALF_ITEM_INSETS);
 
 	AddShortcut('W', B_COMMAND_KEY, new BMessage(B_QUIT_REQUESTED));
 
