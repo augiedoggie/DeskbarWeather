@@ -5,7 +5,6 @@
 #define _SETTINGSWINDOW_H_
 
 
-#include <Locker.h>
 #include <Window.h>
 
 
@@ -22,7 +21,7 @@ class WeatherSettings;
 class SettingsWindow : public BWindow {
 
 public:
-						SettingsWindow(WeatherSettings* settings, BLocker& lock, BInvoker* invoker, BRect frame);
+						SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRect frame);
 	virtual				~SettingsWindow();
 
 	virtual	void		MessageReceived(BMessage* message);
@@ -46,7 +45,6 @@ private:
 	BCheckBox*			fCompactBox;
 	BCheckBox*			fShowForecastBox;
 	BMenuField*			fIntervalMenuField;
-	BLocker*			fLock;
 
 };
 

@@ -40,35 +40,59 @@ const bool kCompactForecastDefault = false;
 
 
 WeatherSettings::WeatherSettings()
+	:
+	BLocker("weather settings lock")
 {
-	BPath prefsPath;
-	if (find_directory(B_USER_SETTINGS_DIRECTORY, &prefsPath) != B_OK)
-		return;
+	Load();
+}
 
-	prefsPath.Append(kPrefsFileName);
-	BFile prefsFile;
 
-	if (prefsFile.SetTo(prefsPath.Path(), B_READ_WRITE | B_CREATE_FILE) != B_OK)
-		return;
-
-	if (Unflatten(&prefsFile) != B_OK)
-		return;
+WeatherSettings::WeatherSettings(const WeatherSettings& settings)
+	:
+	BMessage(settings),
+	BLocker("weather settings lock")
+{
+	Load();
 }
 
 
 WeatherSettings::~WeatherSettings()
 {
+	Save();
+}
+
+
+status_t
+WeatherSettings::Load()
+{
 	BPath prefsPath;
 	if (find_directory(B_USER_SETTINGS_DIRECTORY, &prefsPath) != B_OK)
-		return;
+		return B_ERROR;
+
+	prefsPath.Append(kPrefsFileName);
+	BFile prefsFile;
+
+	if (prefsFile.SetTo(prefsPath.Path(), B_READ_WRITE | B_CREATE_FILE) != B_OK)
+		return B_ERROR;
+
+	return Unflatten(&prefsFile);
+}
+
+
+status_t
+WeatherSettings::Save()
+{
+	BPath prefsPath;
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, &prefsPath) != B_OK)
+		return B_ERROR;
 
 	prefsPath.Append(kPrefsFileName);
 	BFile prefsFile;
 
 	if (prefsFile.SetTo(prefsPath.Path(), B_READ_WRITE | B_CREATE_FILE | B_ERASE_FILE) != B_OK)
-		return;
+		return B_ERROR;
 
-	Flatten(&prefsFile);
+	return Flatten(&prefsFile);
 }
 
 

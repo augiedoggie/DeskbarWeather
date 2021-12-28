@@ -30,7 +30,7 @@ enum {
 };
 
 
-SettingsWindow::SettingsWindow(WeatherSettings* settings, BLocker& lock, BInvoker* invoker, BRect frame)
+SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRect frame)
 	:
 	BWindow(frame, "DeskbarWeather Preferences", B_FLOATING_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
 			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
@@ -41,14 +41,13 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BLocker& lock, BInvoke
 	fInvoker(invoker),
 	fLocationBox(NULL),
 	fLocationControl(NULL),
-	fLock(&lock),
 	fMetricButton(NULL),
 	fNotificationBox(NULL),
 	fShowForecastBox(NULL),
 	fSettings(settings),
 	fSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*settings)))
 {
-	AutoLocker<BLocker> locker(fLock);
+	AutoLocker<WeatherSettings> slocker(fSettings);
 
 	BTextControl* apiControl = new BTextControl("ApiKeyControl", "API Key:", fSettings->ApiKey(), NULL);
 	apiControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
@@ -143,7 +142,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		case 180:
 		case 999999:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			if (fSettings->RefreshInterval() != (int32)message->what) {
 				fSettings->SetRefreshInterval(message->what);
 				fInvoker->Invoke();
@@ -152,7 +151,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kCompactCheckboxMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			int32 value = message->GetInt32("be:value", -1);
 			if (value == -1)
 				break;
@@ -164,7 +163,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kGeoCheckboxMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			BCheckBox* useGeoCheckbox = dynamic_cast<BCheckBox*>(FindView("GeoLocationCheckBox"));
 			if (useGeoCheckbox == NULL)
 				return;
@@ -184,7 +183,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kGeoNotificationCheckboxMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			int32 value = message->GetInt32("be:value", -1);
 			if (value == -1)
 				break;
@@ -196,7 +195,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kNotificationCheckboxMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			int32 value = message->GetInt32("be:value", -1);
 			if (value == -1)
 				break;
@@ -210,7 +209,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kShowForecastCheckboxMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			int32 value = message->GetInt32("be:value", -1);
 			if (value == -1)
 				break;
@@ -222,7 +221,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kImperialMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			if (!fSettings->ImperialUnits()) {
 				fSettings->SetImperialUnits(true);
 				fInvoker->Invoke();
@@ -231,7 +230,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kMetricMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			if (fSettings->ImperialUnits()) {
 				fSettings->SetImperialUnits(false);
 				fInvoker->Invoke();
@@ -240,14 +239,14 @@ SettingsWindow::MessageReceived(BMessage* message)
 		}
 		case kFontMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			if (_UpdateFontMenu(message) != B_OK)
 				(new BAlert("Error", "Font Error!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 			break;
 		}
 		case kRevertButtonMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			_InitControls(true);
 			break;
 		}
@@ -260,9 +259,9 @@ SettingsWindow::MessageReceived(BMessage* message)
 bool
 SettingsWindow::QuitRequested()
 {
-	AutoLocker<BLocker> locker(fLock);
+	AutoLocker<WeatherSettings> slocker(fSettings);
 	_SaveSettings();
-	locker.Unlock();
+	slocker.Unlock();
 
 	return BWindow::QuitRequested();
 }

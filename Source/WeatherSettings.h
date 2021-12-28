@@ -5,16 +5,21 @@
 #define _WEATHERSETTINGS_H_
 
 
+#include <Locker.h>
 #include <Message.h>
 
 
 class BFont;
 
 
-class WeatherSettings : public BMessage {
+class WeatherSettings : public BMessage, public BLocker {
 public:
 				WeatherSettings();
+				WeatherSettings(const WeatherSettings& settings);
 	virtual		~WeatherSettings();
+
+	status_t	Load();
+	status_t	Save();
 
 	const char*	Location();
 	void		SetLocation(const char* location);

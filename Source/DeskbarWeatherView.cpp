@@ -116,7 +116,6 @@ DeskbarWeatherView::Archive(BMessage* message, bool deep) const
 void
 DeskbarWeatherView::AttachedToWindow()
 {
-	AutoLocker<BLocker> locker(fLock);
 	BView::AttachedToWindow();
 	if (Parent())
 		SetViewColor(Parent()->ViewColor());
@@ -125,6 +124,7 @@ DeskbarWeatherView::AttachedToWindow()
 
 	SetLowColor(ViewColor());
 
+	AutoLocker<WeatherSettings> slocker(fSettings);
 	fWeather = new OpenWeather(fSettings->ApiKey(), fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits(),
 								new BInvoker(new BMessage(kRefreshMessage), this));
 
@@ -170,6 +170,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 		case kSettingsChangeMessage:
 		{
 			AutoLocker<BLocker> locker(fLock);
+			AutoLocker<WeatherSettings> slocker(fSettings);
 			//TODO check for geolocation status change
 			fWeather->RebuildRequestUrl(fSettings->ApiKey(), fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits());
 			_CheckMessageRunner();
@@ -191,7 +192,6 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			break;
 		case kForceGeoLocationMessage:
 		{
-			AutoLocker<BLocker> locker(fLock);
 			if (fLocationProvider != NULL)
 				fLocationProvider->Run(true); // will force a weather refresh when the reply message arrives
 			break;
@@ -225,6 +225,7 @@ void
 DeskbarWeatherView::Draw(BRect updateRect)
 {
 	AutoLocker<BLocker> locker(fLock);
+	AutoLocker<WeatherSettings> slocker(fSettings);
 
 	float maxHeight = Bounds().Height();
 
@@ -290,6 +291,8 @@ DeskbarWeatherView::_Init()
 		//TODO exit app
 
 	fSettings = new WeatherSettings();
+	if (fSettings->InitCheck() != B_OK)
+		(new BAlert("Error", "Settings failed InitCheck()!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 
 	fIcon = LoadResourceBitmap("unknown", Bounds().Height() - 1);
 
@@ -303,7 +306,7 @@ status_t
 DeskbarWeatherView::_CheckMessageRunner()
 {
 	// verify our data is already locked
-	if (!fLock.IsLocked())
+	if (!fSettings->IsLocked())
 		return B_ERROR;
 
 	if (fSettings->ApiKey() == NULL) {
@@ -358,6 +361,7 @@ DeskbarWeatherView::_ShowForecastWindow(bool toggle)
 	}
 
 	AutoLocker<BLocker> locker(fLock);
+	AutoLocker<WeatherSettings> slocker(fSettings);
 	if (fWeather != NULL && fWeather->Current() != NULL)
 		//TODO save/restore window position
 		new ForecastWindow(fWeather, BRect(100, 100, 500, 300), fSettings->Location(), fSettings->CompactForecast());
@@ -376,14 +380,14 @@ DeskbarWeatherView::_ShowSettingsWindow()
 		}
 	}
 
-	new SettingsWindow(fSettings, fLock, new BInvoker(new BMessage(kSettingsChangeMessage), this), BRect(100, 100, 500, 300));
+	new SettingsWindow(fSettings, new BInvoker(new BMessage(kSettingsChangeMessage), this), BRect(100, 100, 500, 300));
 }
 
 
 void
 DeskbarWeatherView::_ForceRefresh()
 {
-	AutoLocker<BLocker> locker(fLock);
+	AutoLocker<WeatherSettings> slocker(fSettings);
 	if (fSettings->ApiKey() == NULL)
 		return;
 
@@ -414,6 +418,7 @@ void
 DeskbarWeatherView::_RefreshComplete(BMessage* message)
 {
 	AutoLocker<BLocker> locker(fLock);
+	AutoLocker<WeatherSettings> slocker(fSettings);
 	int32 status = message->GetInt32("re:code", -1);
 	BString response(message->GetString("re:message", "BMessage Error"));
 
@@ -483,7 +488,7 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		return;
 	}
 
-	AutoLocker<BLocker> locker(fLock);
+	AutoLocker<WeatherSettings> slocker(fSettings);
 
 	fSettings->SetLocation(latitude, longitude);
 
@@ -543,6 +548,7 @@ void
 DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 {
 	AutoLocker<BLocker> locker(fLock);
+	AutoLocker<WeatherSettings> slocker(fSettings);
 	BMenu* helpMenu = NULL;
 	BPopUpMenu* popupMenu = new BPopUpMenu("Menu");
 	BLayoutBuilder::Menu<> builder = BLayoutBuilder::Menu<>(popupMenu)
