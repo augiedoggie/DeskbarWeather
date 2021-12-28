@@ -26,7 +26,6 @@ enum {
 	kShowForecastCheckboxMessage	= 'RnSf',
 	kGeoNotificationCheckboxMessage	= 'GcGn',
 	kRevertButtonMessage			= 'GcRv',
-	kCloseButtonMessage				= 'GcCl',
 	kCompactCheckboxMessage			= 'DwCc'
 };
 
@@ -84,7 +83,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BLocker& lock, BInvoke
 
 	fCompactBox = new BCheckBox("CompactForecastBox", "Use compact forecast window", new BMessage(kCompactCheckboxMessage));
 
-	BButton* closeButton = new BButton("CloseButton", "Close", new BMessage(kCloseButtonMessage));
+	BButton* closeButton = new BButton("CloseButton", "Close", new BMessage(B_QUIT_REQUESTED));
 	closeButton->MakeDefault(true);
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
@@ -246,14 +245,6 @@ SettingsWindow::MessageReceived(BMessage* message)
 				(new BAlert("Error", "Font Error!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 			break;
 		}
-		case kCloseButtonMessage:
-		{
-			AutoLocker<BLocker> locker(fLock);
-			_SaveSettings();
-			locker.Unlock();
-			Quit();
-			break;
-		}
 		case kRevertButtonMessage:
 		{
 			AutoLocker<BLocker> locker(fLock);
@@ -263,6 +254,17 @@ SettingsWindow::MessageReceived(BMessage* message)
 		default:
 			BWindow::MessageReceived(message);
 	}
+}
+
+
+bool
+SettingsWindow::QuitRequested()
+{
+	AutoLocker<BLocker> locker(fLock);
+	_SaveSettings();
+	locker.Unlock();
+
+	return BWindow::QuitRequested();
 }
 
 

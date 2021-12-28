@@ -26,6 +26,7 @@ public:
 	virtual				~SettingsWindow();
 
 	virtual	void		MessageReceived(BMessage* message);
+	virtual	bool		QuitRequested();
 
 private:
 			void		_InitControls(bool revert = false);
