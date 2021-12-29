@@ -31,7 +31,9 @@ private:
 			void		_InitControls(bool revert = false);
 			void		_SaveSettings();
 			BMenu*		_BuildFontMenu();
+			status_t	_ResetFontMenu();
 			status_t	_UpdateFontMenu(BMessage* message);
+			status_t	_UpdateFontMenu(const char* family, const char* style, double size);
 
 	WeatherSettings*	fSettings;
 	WeatherSettings*	fSettingsCache;

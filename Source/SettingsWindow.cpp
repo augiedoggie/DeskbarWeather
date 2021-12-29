@@ -25,6 +25,7 @@ enum {
 	kNotificationCheckboxMessage	= 'GcNo',
 	kShowForecastCheckboxMessage	= 'RnSf',
 	kGeoNotificationCheckboxMessage	= 'GcGn',
+	kResetFontMessage				= 'GcRf',
 	kRevertButtonMessage			= 'GcRv',
 	kCompactCheckboxMessage			= 'DwCc'
 };
@@ -107,7 +108,8 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 				.Add(fMetricButton)
 			.End()
 			.AddMenuField(fontMenuField, 0, 8, B_ALIGN_RIGHT)
-			.Add(fCompactBox, 1, 9)
+			.Add(new BButton("ResetFontButton", "Reset font to default", new BMessage(kResetFontMessage)), 1, 9)
+			.Add(fCompactBox, 1, 10)
 		.End()
 		.AddGlue()
 		.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING)
@@ -242,6 +244,14 @@ SettingsWindow::MessageReceived(BMessage* message)
 		{
 			AutoLocker<WeatherSettings> slocker(fSettings);
 			if (_UpdateFontMenu(message) != B_OK)
+				(new BAlert("Error", "Font Error!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
+			break;
+		}
+		case kResetFontMessage:
+		{
+			AutoLocker<WeatherSettings> slocker(fSettings);
+			fSettings->ResetFont();
+			if (_ResetFontMenu() != B_OK)
 				(new BAlert("Error", "Font Error!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 			break;
 		}
@@ -423,13 +433,27 @@ SettingsWindow::_BuildFontMenu()
 
 
 status_t
+SettingsWindow::_ResetFontMenu()
+{
+	BFont font;
+	fSettings->GetFont(font);
+
+	font_family family;
+	font_style style;
+	font.GetFamilyAndStyle(&family, &style);
+
+	return _UpdateFontMenu(family, style, font.Size());
+}
+
+
+status_t
 SettingsWindow::_UpdateFontMenu(BMessage* message)
 {
 	const char* family = NULL;
 	if (message->FindString("FontFamily", &family) != B_OK)
 		return B_ERROR;
 
-	const char* style;
+	const char* style = NULL;
 	if (message->FindString("FontStyle", &style) != B_OK)
 		return B_ERROR;
 
@@ -437,6 +461,13 @@ SettingsWindow::_UpdateFontMenu(BMessage* message)
 	if (message->FindDouble("FontSize", &size) != B_OK)
 		return B_ERROR;
 
+	return _UpdateFontMenu(family, style, size);
+}
+
+
+status_t
+SettingsWindow::_UpdateFontMenu(const char* family, const char* style, double size)
+{
 	BMenuField* menuField = dynamic_cast<BMenuField*>(FindView("FontMenuField"));
 	if (menuField == NULL)
 		return B_ERROR;
