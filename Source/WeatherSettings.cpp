@@ -279,3 +279,11 @@ WeatherSettings::SetFont(const char* family, const char* style, double size)
 
 	return B_OK;
 }
+
+void
+WeatherSettings::ResetFont()
+{
+	RemoveName(kFontFamilyKey);
+	RemoveName(kFontStyleKey);
+	RemoveName(kFontSizeKey);
+}

@@ -42,6 +42,7 @@ public:
 	bool		NotificationClick();
 	status_t	SetFont(const char* family, const char* style, double size);
 	status_t	GetFont(BFont& font);
+	void		ResetFont();
 	void		SetCompactForecast(bool enabled);
 	bool		CompactForecast();
 };
