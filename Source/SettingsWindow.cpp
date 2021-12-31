@@ -50,8 +50,8 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 {
 	AutoLocker<WeatherSettings> slocker(fSettings);
 
-	BTextControl* apiControl = new BTextControl("ApiKeyControl", "API Key:", fSettings->ApiKey(), NULL);
-	apiControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
+	fApiKeyControl = new BTextControl("ApiKeyControl", "API Key:", fSettings->ApiKey(), NULL);
+	fApiKeyControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
 
 	BPopUpMenu* intervalMenu = new BPopUpMenu("IntervalMenu");
 	BLayoutBuilder::Menu<>(intervalMenu)
@@ -89,7 +89,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddGrid(0.0, B_USE_HALF_ITEM_INSETS)
-			.AddTextControl(apiControl, 0, 0, B_ALIGN_RIGHT)
+			.AddTextControl(fApiKeyControl, 0, 0, B_ALIGN_RIGHT)
 			.AddMenuField(fIntervalMenuField, 0, 1, B_ALIGN_RIGHT)
 			.Add(fNotificationBox, 1, 2)
 			.Add(fShowForecastBox, 1, 3)
@@ -145,11 +145,10 @@ SettingsWindow::MessageReceived(BMessage* message)
 		case 999999:
 		{
 			AutoLocker<WeatherSettings> slocker(fSettings);
-			if (fSettings->RefreshInterval() != (int32)message->what) {
+			int32 interval = message->what == 999999 ? -1 : message->what;
+			if (fSettings->RefreshInterval() != interval)
 				fSettings->SetRefreshInterval(message->what);
-				//TODO only invoke if we switch from manual to automatic?
-				fInvoker->Invoke();
-			}
+			// wait to Invoke() until we close the window
 			break;
 		}
 		case kCompactCheckboxMessage:
@@ -243,7 +242,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		case kFontMessage:
 		{
 			AutoLocker<WeatherSettings> slocker(fSettings);
-			if (_UpdateFontMenu(message) != B_OK)
+			if (_HandleFontChange(message) != B_OK)
 				(new BAlert("Error", "Font Error!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 			break;
 		}
@@ -281,14 +280,20 @@ SettingsWindow::QuitRequested()
 void
 SettingsWindow::_InitControls(bool revert)
 {
+	bool needRefresh = false;
 	if (revert) {
+		//TODO check if key/interval/units/location/geolookup/... are different and set needRefresh to true
+		fSettings->SetApiKey(fSettingsCache->ApiKey());
 		fSettings->SetImperialUnits(fSettingsCache->ImperialUnits());
 		fSettings->SetUseGeoLocation(fSettingsCache->UseGeoLocation());
 		fSettings->SetLocation(fSettingsCache->Location());
 		fSettings->SetRefreshInterval(fSettingsCache->RefreshInterval());
 		fSettings->SetUseNotification(fSettingsCache->UseNotification());
 		fSettings->SetNotificationClick(fSettingsCache->NotificationClick());
-		//TODO revert font & api key
+		fSettings->SetCompactForecast(fSettingsCache->CompactForecast());
+		BFont font;
+		if (fSettingsCache->GetFont(font) == B_OK)
+			fSettings->SetFont(font);
 	}
 
 	if (fSettings->ImperialUnits())
@@ -296,34 +301,34 @@ SettingsWindow::_InitControls(bool revert)
 	else
 		fMetricButton->SetValue(1);
 
-	if (fSettings->UseGeoLocation()) {
-		fLocationBox->SetValue(1);
-		fLocationControl->SetEnabled(false);
-	} else
-		fGeoNotificationBox->SetEnabled(false);
+	fApiKeyControl->SetText(fSettings->ApiKey());
 
-	if (fSettings->UseGeoNotification())
-		fGeoNotificationBox->SetValue(1);
+	fGeoNotificationBox->SetEnabled(fSettings->UseGeoLocation());
+	fGeoNotificationBox->SetValue(fSettings->UseGeoNotification());
 
-	if (fSettings->NotificationClick())
-		fShowForecastBox->SetValue(1);
+	fLocationBox->SetValue(fSettings->UseGeoLocation());
 
-	if (fSettings->UseNotification())
-		fNotificationBox->SetValue(1);
-	else
-		fShowForecastBox->SetEnabled(false);
+	fLocationControl->SetEnabled(!fSettings->UseGeoLocation());
+	fLocationControl->SetText(fSettings->Location());
+
+	fNotificationBox->SetValue(fSettings->UseNotification());
+
+	fShowForecastBox->SetValue(fSettings->NotificationClick());
+
+	fShowForecastBox->SetEnabled(fSettings->UseNotification());
+	fShowForecastBox->SetValue(fSettings->NotificationClick());
+
+	fCompactBox->SetValue(fSettings->CompactForecast());
 
 	BMenu* intervalMenu = fIntervalMenuField->Menu();
-	BMenuItem* selectedItem = intervalMenu->FindItem(fSettings->RefreshInterval());
+	BMenuItem* selectedItem = intervalMenu->FindItem(fSettings->RefreshInterval() < 0 ? 999999 : fSettings->RefreshInterval());
 	if (selectedItem != NULL)
 		selectedItem->SetMarked(true);
-	//TODO show error?
 
-	if (fSettings->CompactForecast())
-		fCompactBox->SetValue(1);
+	_ResetFontMenu();
 
-//	if (revert)
-	//TODO send settings change message
+	if (needRefresh)
+		fInvoker->Invoke();
 }
 
 
@@ -335,11 +340,9 @@ SettingsWindow::_SaveSettings()
 	BTextControl* control = dynamic_cast<BTextControl*>(FindView("ApiKeyControl"));
 	if (control != NULL) {
 		const char* text = control->Text();
-		if (fSettings->ApiKey() == NULL) {
-			if (strlen(text) > 0) {
-				fSettings->SetApiKey(text);
-				needRefresh = true;
-			}
+		if (fSettings->ApiKey() == NULL && strlen(text) > 0) {
+			fSettings->SetApiKey(text);
+			needRefresh = true;
 		} else if (strcmp(fSettings->ApiKey(), text) != 0) {
 			if (strlen(text) == 0)
 				fSettings->SetApiKey(NULL);
@@ -349,13 +352,13 @@ SettingsWindow::_SaveSettings()
 		}
 	}
 
-	control = dynamic_cast<BTextControl*>(FindView("LocationControl"));
-	if (control != NULL) {
-		if (strcmp(fSettings->Location(), control->Text()) != 0) {
-			fSettings->SetLocation(control->Text());
-			needRefresh = true;
-		}
+	if (strcmp(fSettings->Location(), fLocationControl->Text()) != 0) {
+		fSettings->SetLocation(control->Text());
+		needRefresh = true;
 	}
+
+	if (fSettingsCache->RefreshInterval() != fSettings->RefreshInterval())
+		needRefresh = true;
 
 	if (needRefresh)
 		fInvoker->Invoke();
@@ -447,7 +450,7 @@ SettingsWindow::_ResetFontMenu()
 
 
 status_t
-SettingsWindow::_UpdateFontMenu(BMessage* message)
+SettingsWindow::_HandleFontChange(BMessage* message)
 {
 	const char* family = NULL;
 	if (message->FindString("FontFamily", &family) != B_OK)
@@ -460,6 +463,8 @@ SettingsWindow::_UpdateFontMenu(BMessage* message)
 	double size = -1.0;
 	if (message->FindDouble("FontSize", &size) != B_OK)
 		return B_ERROR;
+
+	fSettings->SetFont(family, style, size);
 
 	return _UpdateFontMenu(family, style, size);
 }
@@ -503,10 +508,8 @@ SettingsWindow::_UpdateFontMenu(const char* family, const char* style, double si
 	menuLabelStr.SetToFormat("%s - %s - %g", family, style, size);
 	menuField->MenuItem()->SetLabel(menuLabelStr);
 
-	fSettings->SetFont(family, style, size);
-
 	BMessage copy(*fInvoker->Message());
-	copy.AddBool("skiprefresh", true);
+	copy.AddBool("skiprefresh", true); // don't refresh the weather, just the UI
 	fInvoker->Invoke(&copy);
 
 	return B_OK;

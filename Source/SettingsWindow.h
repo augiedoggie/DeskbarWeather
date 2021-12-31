@@ -32,7 +32,7 @@ private:
 			void		_SaveSettings();
 			BMenu*		_BuildFontMenu();
 			status_t	_ResetFontMenu();
-			status_t	_UpdateFontMenu(BMessage* message);
+			status_t	_HandleFontChange(BMessage* message);
 			status_t	_UpdateFontMenu(const char* family, const char* style, double size);
 
 	WeatherSettings*	fSettings;
@@ -40,6 +40,7 @@ private:
 	BInvoker*			fInvoker;
 	BRadioButton*		fMetricButton;
 	BRadioButton*		fImperialButton;
+	BTextControl*		fApiKeyControl;
 	BTextControl*		fLocationControl;
 	BCheckBox*			fLocationBox;
 	BCheckBox*			fGeoNotificationBox;
