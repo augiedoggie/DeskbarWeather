@@ -268,6 +268,17 @@ WeatherSettings::GetFont(BFont& font)
 
 
 status_t
+WeatherSettings::SetFont(BFont& font)
+{
+	font_family family;
+	font_style style;
+	font.GetFamilyAndStyle(&family, &style);
+
+	return SetFont(family, style, font.Size());
+}
+
+
+status_t
 WeatherSettings::SetFont(const char* family, const char* style, double size)
 {
 	if (family == NULL || style == NULL || size < 8.0 || size > 16.0)
