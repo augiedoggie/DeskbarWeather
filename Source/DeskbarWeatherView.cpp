@@ -178,6 +178,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 				_CheckMessageRunner();
 			}
 
+			// check if our current BView font is different
 			BFont newFont, oldFont;
 			fSettings->GetFont(newFont);
 			GetFont(&oldFont);
@@ -322,18 +323,17 @@ DeskbarWeatherView::_CheckMessageRunner()
 
 	//TODO check if we have a valid location(latitude/longitude)
 
-	if (fSettings->RefreshInterval() < 0) {
+	if (fSettings->RefreshInterval() == 999999) {
 		// automatic refresh is disabled, remove any existing runner and return
-		if (fMessageRunner != NULL) {
-			delete fMessageRunner;
-			fMessageRunner = NULL;
-		}
+		delete fMessageRunner;
+		fMessageRunner = NULL;
 		return B_OK;
 	}
 
 	if (fMessageRunner == NULL) {
 		BMessage bufMsg(kForceRefreshMessage);
 		fMessageRunner = new BMessageRunner(BMessenger(this), &bufMsg, (bigtime_t)fSettings->RefreshInterval() * 60000000, -1);
+		//TODO force refresh here because we've switched manual->automatic?
 	} else
 		fMessageRunner->SetInterval((bigtime_t)fSettings->RefreshInterval() * 60000000);
 
@@ -517,6 +517,7 @@ DeskbarWeatherView::_GeoLookupComplete(BMessage* message)
 		notification.Send();
 	}
 
+	//TODO only force if we're not in manual refresh mode?
 	_ForceRefresh();
 }
 

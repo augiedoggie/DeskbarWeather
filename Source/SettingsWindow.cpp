@@ -145,9 +145,7 @@ SettingsWindow::MessageReceived(BMessage* message)
 		case 999999:
 		{
 			AutoLocker<WeatherSettings> slocker(fSettings);
-			int32 interval = message->what == 999999 ? -1 : message->what;
-			if (fSettings->RefreshInterval() != interval)
-				fSettings->SetRefreshInterval(message->what);
+			fSettings->SetRefreshInterval(message->what);
 			// wait to Invoke() until we close the window
 			break;
 		}
@@ -257,7 +255,8 @@ SettingsWindow::MessageReceived(BMessage* message)
 		case kRevertButtonMessage:
 		{
 			AutoLocker<WeatherSettings> slocker(fSettings);
-			_InitControls(true);
+			_RevertSettings();
+			_InitControls();
 			break;
 		}
 		default:
@@ -278,24 +277,53 @@ SettingsWindow::QuitRequested()
 
 
 void
-SettingsWindow::_InitControls(bool revert)
+SettingsWindow::_RevertSettings()
 {
 	bool needRefresh = false;
-	if (revert) {
-		//TODO check if key/interval/units/location/geolookup/... are different and set needRefresh to true
+
+	if (strcmp(fSettings->ApiKey(), fSettingsCache->ApiKey()) != 0) {
 		fSettings->SetApiKey(fSettingsCache->ApiKey());
-		fSettings->SetImperialUnits(fSettingsCache->ImperialUnits());
-		fSettings->SetUseGeoLocation(fSettingsCache->UseGeoLocation());
-		fSettings->SetLocation(fSettingsCache->Location());
-		fSettings->SetRefreshInterval(fSettingsCache->RefreshInterval());
-		fSettings->SetUseNotification(fSettingsCache->UseNotification());
-		fSettings->SetNotificationClick(fSettingsCache->NotificationClick());
-		fSettings->SetCompactForecast(fSettingsCache->CompactForecast());
-		BFont font;
-		if (fSettingsCache->GetFont(font) == B_OK)
-			fSettings->SetFont(font);
+		needRefresh = true;
 	}
 
+	if (fSettings->ImperialUnits() != fSettingsCache->ImperialUnits()) {
+		fSettings->SetImperialUnits(fSettingsCache->ImperialUnits());
+		needRefresh = true;
+	}
+
+	if (fSettings->UseGeoLocation() != fSettingsCache->UseGeoLocation()) {
+		fSettings->SetUseGeoLocation(fSettingsCache->UseGeoLocation());
+		needRefresh = true;
+	}
+
+	if (strcmp(fSettings->Location(), fSettingsCache->Location()) != 0) {
+		fSettings->SetLocation(fSettingsCache->Location());
+		needRefresh = true;
+	}
+
+	if (fSettings->RefreshInterval() != fSettingsCache->RefreshInterval()) {
+		fSettings->SetRefreshInterval(fSettingsCache->RefreshInterval());
+		needRefresh = true;
+	}
+
+	// no need to refresh immediately for these
+	fSettings->SetUseNotification(fSettingsCache->UseNotification());
+	fSettings->SetNotificationClick(fSettingsCache->NotificationClick());
+	fSettings->SetCompactForecast(fSettingsCache->CompactForecast());
+
+	BFont font;
+	if (fSettingsCache->GetFont(font) == B_OK)
+		fSettings->SetFont(font);
+	// _InitControls() will be called after this and will handle the font refresh message
+
+	if (needRefresh)
+		fInvoker->Invoke();
+}
+
+
+void
+SettingsWindow::_InitControls()
+{
 	if (fSettings->ImperialUnits())
 		fImperialButton->SetValue(1);
 	else
@@ -321,14 +349,11 @@ SettingsWindow::_InitControls(bool revert)
 	fCompactBox->SetValue(fSettings->CompactForecast());
 
 	BMenu* intervalMenu = fIntervalMenuField->Menu();
-	BMenuItem* selectedItem = intervalMenu->FindItem(fSettings->RefreshInterval() < 0 ? 999999 : fSettings->RefreshInterval());
+	BMenuItem* selectedItem = intervalMenu->FindItem(fSettings->RefreshInterval());
 	if (selectedItem != NULL)
 		selectedItem->SetMarked(true);
 
 	_ResetFontMenu();
-
-	if (needRefresh)
-		fInvoker->Invoke();
 }
 
 
@@ -337,27 +362,21 @@ SettingsWindow::_SaveSettings()
 {
 	bool needRefresh = false;
 
-	BTextControl* control = dynamic_cast<BTextControl*>(FindView("ApiKeyControl"));
-	if (control != NULL) {
-		const char* text = control->Text();
-		if (fSettings->ApiKey() == NULL && strlen(text) > 0) {
-			fSettings->SetApiKey(text);
-			needRefresh = true;
-		} else if (strcmp(fSettings->ApiKey(), text) != 0) {
-			if (strlen(text) == 0)
-				fSettings->SetApiKey(NULL);
-			else
-				fSettings->SetApiKey(text);
-			needRefresh = true;
-		}
-	}
-
-	if (strcmp(fSettings->Location(), fLocationControl->Text()) != 0) {
-		fSettings->SetLocation(control->Text());
+	const char* text = fApiKeyControl->Text();
+	if (fSettings->ApiKey() == NULL && strlen(text) > 0) {
+		fSettings->SetApiKey(text);
+		needRefresh = true;
+	} else if (strcmp(fSettings->ApiKey(), text) != 0) {
+		fSettings->SetApiKey(strlen(text) == 0 ? NULL : text);
 		needRefresh = true;
 	}
 
-	if (fSettingsCache->RefreshInterval() != fSettings->RefreshInterval())
+	if (strcmp(fSettings->Location(), fLocationControl->Text()) != 0) {
+		fSettings->SetLocation(fLocationControl->Text());
+		needRefresh = true;
+	}
+
+	if (fSettings->RefreshInterval() != fSettingsCache->RefreshInterval())
 		needRefresh = true;
 
 	if (needRefresh)

@@ -28,7 +28,8 @@ public:
 	virtual	bool		QuitRequested();
 
 private:
-			void		_InitControls(bool revert = false);
+			void		_InitControls();
+			void		_RevertSettings();
 			void		_SaveSettings();
 			BMenu*		_BuildFontMenu();
 			status_t	_ResetFontMenu();
