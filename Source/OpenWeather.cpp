@@ -37,7 +37,7 @@ OpenWeather::~OpenWeather()
 			fUrlRequest->Stop();
 
 		delete fUrlRequest->Output();
-		delete fUrlRequest->Listener();
+		delete dynamic_cast<JsonRequestListener*>(fUrlRequest->Listener());
 	}
 	delete fUrlRequest;
 	delete fCurrent;

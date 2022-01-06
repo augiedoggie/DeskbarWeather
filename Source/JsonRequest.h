@@ -20,6 +20,7 @@ using namespace BPrivate::Network;
 class JsonRequestListener : public BUrlProtocolListener {
 public:
 						JsonRequestListener(BInvoker* invoker);
+	virtual				~JsonRequestListener();
 	virtual	void		RequestCompleted(BUrlRequest *caller, bool success);
 private:
 			BInvoker*	fInvoker;

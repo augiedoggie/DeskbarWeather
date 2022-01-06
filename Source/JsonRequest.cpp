@@ -15,6 +15,9 @@ JsonRequestListener::JsonRequestListener(BInvoker* invoker)
 {}
 
 
+JsonRequestListener::~JsonRequestListener() {}
+
+
 void
 JsonRequestListener::RequestCompleted(BUrlRequest *caller, bool /*success*/)
 {
