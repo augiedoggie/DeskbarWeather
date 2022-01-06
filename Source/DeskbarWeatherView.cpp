@@ -35,7 +35,7 @@ using namespace BPrivate::Network;
 const char* kGithubURL = "https://github.com/augiedoggie/DeskbarWeather/";
 
 
-extern "C" _EXPORT BView* instantiate_deskbar_item(float maxWidth, float maxHeight)
+extern "C" _EXPORT BView* instantiate_deskbar_item(float /* maxWidth */, float maxHeight)
 {
 	//TODO init weathersetttings, calculate width for the current font, and pass settings object to the view
 	BRect frame(0, 0, 39, maxHeight - 1); // 129 x 16 max?
@@ -50,8 +50,8 @@ DeskbarWeatherView::DeskbarWeatherView(BRect frame)
 	fLocationProvider(NULL),
 	fLock("weather data lock"),
 	fMessageRunner(NULL),
-	fWeather(NULL),
-	fSettings(NULL)
+	fSettings(NULL),
+	fWeather(NULL)
 {
 	_Init();
 }
@@ -64,8 +64,8 @@ DeskbarWeatherView::DeskbarWeatherView(BMessage* message)
 	fLocationProvider(NULL),
 	fLock("weather data lock"),
 	fMessageRunner(NULL),
-	fWeather(NULL),
-	fSettings(NULL)
+	fSettings(NULL),
+	fWeather(NULL)
 {
 	_Init();
 }
@@ -557,7 +557,7 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 	AutoLocker<WeatherSettings> slocker(fSettings);
 	BMenu* helpMenu = NULL;
 	BPopUpMenu* popupMenu = new BPopUpMenu("Menu");
-	BLayoutBuilder::Menu<> builder = BLayoutBuilder::Menu<>(popupMenu)
+	BLayoutBuilder::Menu<>(popupMenu)
 		.AddItem("Open Forecast Window", kForecastWindowMessage)
 			// disable item if we have no current data to show
 			.SetEnabled((fWeather != NULL && fWeather->Current() != NULL))

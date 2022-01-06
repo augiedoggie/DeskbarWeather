@@ -44,9 +44,9 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 	fLocationControl(NULL),
 	fMetricButton(NULL),
 	fNotificationBox(NULL),
-	fShowForecastBox(NULL),
 	fSettings(settings),
-	fSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*settings)))
+	fSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*settings))),
+	fShowForecastBox(NULL)
 {
 	AutoLocker<WeatherSettings> slocker(fSettings);
 

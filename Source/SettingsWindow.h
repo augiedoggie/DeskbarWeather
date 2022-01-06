@@ -36,19 +36,19 @@ private:
 			status_t	_HandleFontChange(BMessage* message);
 			status_t	_UpdateFontMenu(const char* family, const char* style, double size);
 
+	BTextControl*		fApiKeyControl;
+	BCheckBox*			fCompactBox;
+	BCheckBox*			fGeoNotificationBox;
+	BRadioButton*		fImperialButton;
+	BMenuField*			fIntervalMenuField;
+	BInvoker*			fInvoker;
+	BCheckBox*			fLocationBox;
+	BTextControl*		fLocationControl;
+	BRadioButton*		fMetricButton;
+	BCheckBox*			fNotificationBox;
 	WeatherSettings*	fSettings;
 	WeatherSettings*	fSettingsCache;
-	BInvoker*			fInvoker;
-	BRadioButton*		fMetricButton;
-	BRadioButton*		fImperialButton;
-	BTextControl*		fApiKeyControl;
-	BTextControl*		fLocationControl;
-	BCheckBox*			fLocationBox;
-	BCheckBox*			fGeoNotificationBox;
-	BCheckBox*			fNotificationBox;
-	BCheckBox*			fCompactBox;
 	BCheckBox*			fShowForecastBox;
-	BMenuField*			fIntervalMenuField;
 
 };
 

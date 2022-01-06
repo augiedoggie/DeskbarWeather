@@ -45,12 +45,12 @@ private:
 	void				_ResetConditions();
 	void				_SetUpdateTime(bigtime_t);
 
-	BMessage*				fOpenWeatherMessage;
 	Condition*				fCurrent;
 	BObjectList<Condition>*	fForecastList;
 	BInvoker*				fInvoker;
 	time_t					fLastUpdateTime;
 	BUrl*					fOneUrl;
+	BMessage*				fOpenWeatherMessage;
 	BUrlRequest*			fUrlRequest;
 };
 

@@ -21,9 +21,17 @@ enum {
 	kForceGeoLocationMessage = 'GfGw'
 };
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
 static const char* kViewName = "DeskbarWeatherView";
 static const char* kAppMimetype = "application/x-vnd.cpr.DeskbarWeather";
 
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 class BBitmap;
 class BMessageRunner;
@@ -67,12 +75,12 @@ private:
 			void		_ShowSettingsWindow();
 			void		_ForceRefresh();
 
-	IpApiLocationProvider*	fLocationProvider;
-	OpenWeather*			fWeather;
 	BBitmap*				fIcon;
+	IpApiLocationProvider*	fLocationProvider;
 	BLocker					fLock;
 	BMessageRunner*			fMessageRunner;
 	WeatherSettings*		fSettings;
+	OpenWeather*			fWeather;
 };
 
 
