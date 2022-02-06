@@ -571,8 +571,8 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 		.AddMenu("Help")
 			.GetMenu(helpMenu)
 			.AddItem("About DeskbarWeather", B_ABOUT_REQUESTED)
-			.AddItem("Open Manual", kHelpMessage)
-				.SetEnabled(false)  //TODO write help documentation
+			.AddItem("Open User Guide", kHelpMessage)
+				.SetEnabled(false)  //TODO write code to open the user guide
 			.AddItem("Open Github Page", kGithubMessage)
 		.End()
 		.AddItem("Preferences" B_UTF8_ELLIPSIS, kSettingsMessage)
