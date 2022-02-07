@@ -4,67 +4,67 @@
  <g>
   <path style="fill:#ffc800"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(0.0076,-0.9999,0.9999,0.0076,0.5045,51.7486)"
+        transform="matrix(0.0084,-1.1053,1.1049,0.0084,-2.7795,53.8028)"
   />
   <path style="fill:none; stroke:#c89600; stroke-width:1"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(0.0779,-0.9969,0.9969,0.0779,-1.2214,50.9587)"
+        transform="matrix(0.0861,-1.102,1.1016,0.0861,-4.6868,52.9296)"
   />
   <path style="fill:#ffc800"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(-0.7586,0.6514,-0.6514,-0.7586,67.3324,42.8825)"
+        transform="matrix(-0.8383,0.7201,-0.7198,-0.8386,71.0651,44.0025)"
   />
   <path style="fill:none; stroke:#c89600; stroke-width:1"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(-0.8026,0.5964,-0.5964,-0.8026,67.8714,44.7026)"
+        transform="matrix(-0.8868,0.6593,-0.6591,-0.8871,71.6607,46.0144)"
   />
   <path style="fill:#ffc800"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(-0.6928,-0.721,0.721,-0.6928,23.2786,68.2039)"
+        transform="matrix(-0.7656,-0.797,0.7967,-0.7659,22.3857,71.992)"
   />
   <path style="fill:none; stroke:#c89600; stroke-width:1"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(-0.6692,-0.743,0.743,-0.6692,22.8806,68.4789)"
+        transform="matrix(-0.7395,-0.8213,0.821,-0.7397,21.9459,72.296)"
   />
   <path style="fill:#ffc800"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(0.6506,0.7593,-0.7593,0.6506,42.3071,-3.8036)"
+        transform="matrix(0.7189,0.8393,-0.8391,0.7192,43.4121,-7.6032)"
   />
   <path style="fill:none; stroke:#c89600; stroke-width:1"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(0.7232,0.6906,-0.6906,0.7232,40.0714,-3.3857)"
+        transform="matrix(0.7991,0.7633,-0.7631,0.7994,40.9418,-7.1413)"
   />
   <path style="fill:#ffc800"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(0.6955,-0.7185,0.7185,0.6955,-4.4011,23.2374)"
+        transform="matrix(0.7685,-0.7942,0.7939,0.7687,-8.2003,22.2873)"
   />
   <path style="fill:none; stroke:#c89600; stroke-width:1"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(0.7304,-0.6829,0.6829,0.7304,-4.8011,22.3154)"
+        transform="matrix(0.8071,-0.7549,0.7546,0.8074,-8.6423,21.2681)"
   />
   <path style="fill:#ffc800"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(-0.0003,0.9999,-0.9999,-0.0003,63.7092,12.9198)"
+        transform="matrix(-0.0003,1.1053,-1.1049,-0.0003,67.0615,10.8825)"
   />
   <path style="fill:none; stroke:#c89600; stroke-width:1"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(-0.038,0.9992,-0.9992,-0.038,63.9946,13.2079)"
+        transform="matrix(-0.042,1.1045,-1.1041,-0.042,67.3768,11.2009)"
   />
   <path style="fill:#ffc800"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(0.9985,-0.0529,0.0529,0.9985,11.2793,2.3783)"
+        transform="matrix(1.1034,-0.0585,0.0585,1.1038,9.1266,-0.7698)"
   />
   <path style="fill:none; stroke:#c89600; stroke-width:1"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(0.9987,-0.049,0.049,0.9987,11.1882,1.8858)"
+        transform="matrix(1.1036,-0.0541,0.0541,1.104,9.0259,-1.3141)"
   />
   <path style="fill:#ffc800"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(-0.999,0.0431,-0.0431,-0.999,52.8282,62.7533)"
+        transform="matrix(-1.1039,0.0476,-0.0476,-1.1043,55.0379,65.9671)"
   />
   <path style="fill:none; stroke:#c89600; stroke-width:1"
         d="M14 16L20 4L26 16H14z"
-        transform="matrix(-0.9991,0.0421,-0.0421,-0.9991,52.6962,62.7598)"
+        transform="matrix(-1.104,0.0466,-0.0466,-1.1043,54.8921,65.9743)"
   />
   <radialGradient id="gradient0" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="64" gradientTransform="matrix(0.6718,0,0,0.6875,15,17)">
    <stop offset="0" stop-color="#faff04"/>
@@ -72,21 +72,23 @@
   </radialGradient>
   <path style="fill:url(#gradient0)"
         d="M32 16C23.16 16 16 23.16 16 32C16 40.83 23.16 48 32 48C40.83 48 48 40.83 48 32C48 23.16 40.83 16 32 16z"
+        transform="matrix(1.1049,0,0,1.1053,-3.337,-3.3987)"
   />
   <path style="fill:none; stroke:#c89600; stroke-width:1"
         d="M32 16C23.16 16 16 23.16 16 32C16 40.83 23.16 48 32 48C40.83 48 48 40.83 48 32C48 23.16 40.83 16 32 16z"
+        transform="matrix(1.1049,0,0,1.1053,-3.337,-3.3987)"
   />
   <path style="fill:#ffffff"
         d="M16 50C0 50 -0 30 16 30C16 30 16 14 32 14C48 14 48 26 48 26C63.99 26 64 50 48 50C44 50 20 50 16 50z"
-        transform="matrix(0.8666,0,0,0.9,7.2677,13.1999)"
+        transform="matrix(0.8833,0,0,0.925,7.2343,14.8999)"
   />
   <path style="fill:none; stroke:#00c7ff; stroke-width:4"
         d="M16 50C0 50 -0 30 16 30C16 30 16 14 32 14C48 14 48 26 48 26C63.99 26 64 50 48 50C44 50 20 50 16 50z"
-        transform="matrix(0.8666,0,0,0.9,7.2677,13.1999)"
+        transform="matrix(0.8833,0,0,0.925,7.2343,14.8999)"
   />
   <path style="fill:none; stroke:#00c7ff; stroke-width:4"
         d="M48 26C40 26 36 30 36 38"
-        transform="matrix(0.8666,0,0,0.9,7.2677,13.1999)"
+        transform="matrix(0.8833,0,0,0.925,7.2343,14.8999)"
   />
  </g>
 </svg>
