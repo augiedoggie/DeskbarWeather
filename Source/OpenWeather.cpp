@@ -183,34 +183,27 @@ OpenWeather::_ParseCurrent(BMessage& data)
 
 	// strip off 'd' or 'n'
 	bufStr.Truncate(bufStr.Length() - 1);
-	int32 icon = atol(bufStr.String());
-	switch (icon) {
-		case 1:
+	switch (atol(bufStr.String())) {
+		case 1: // clear sky
 			fCurrent->SetIcon("sunny");
 			break;
-		case 2:
+		case 2: // few clouds
+		case 3: // scattered clouds
 			fCurrent->SetIcon("partlycloudy");
 			break;
-		case 3:
-			fCurrent->SetIcon("mostlycloudy");
-			break;
-		case 4:
+		case 4: // broken clouds
 			fCurrent->SetIcon("cloudy");
 			break;
-		case 9:
+		case 9: // shower rain
+		case 10: // rain
+		case 50: // mist
 			fCurrent->SetIcon("rain");
 			break;
-		case 10:
-			fCurrent->SetIcon("rain");
-			break;
-		case 11:
+		case 11: // thunderstorm
 			fCurrent->SetIcon("thunderstorm");
 			break;
-		case 13:
+		case 13: // snow
 			fCurrent->SetIcon("snow");
-			break;
-		case 50:
-			fCurrent->SetIcon("mist");
 			break;
 		default:
 			fCurrent->SetIcon("unknown");
