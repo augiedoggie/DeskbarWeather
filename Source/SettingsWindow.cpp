@@ -111,6 +111,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 			.Add(new BButton("ResetFontButton", "Reset font to default", new BMessage(kResetFontMessage)), 1, 9)
 			.Add(fCompactBox, 1, 10)
 		.End()
+		.Add(new BStringView("InfoStringView", "Changing font or units may require the app to be restarted to display properly"))
 		.AddGlue()
 		.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING)
 			.Add(new BButton("RevertButton", "Revert", new BMessage(kRevertButtonMessage)))

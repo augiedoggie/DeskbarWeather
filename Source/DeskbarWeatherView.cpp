@@ -37,20 +37,40 @@ const char* kGithubURL = "https://github.com/augiedoggie/DeskbarWeather/";
 
 extern "C" _EXPORT BView* instantiate_deskbar_item(float /* maxWidth */, float maxHeight)
 {
-	//TODO init weathersetttings, calculate width for the current font, and pass settings object to the view
-	BRect frame(0, 0, 39, maxHeight - 1); // 129 x 16 max?
-	return new DeskbarWeatherView(frame);
+	// load our settings so we can get our chosen font
+	WeatherSettings* settings = new WeatherSettings();
+	if (settings->InitCheck() != B_OK) {
+		(new BAlert("Error", "Settings failed InitCheck()!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
+		delete settings;
+		return NULL;
+	}
+
+	BFont font;
+	if (settings->GetFont(font) != B_OK) {
+		(new BAlert("Error", "Failed to load font!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
+		delete settings;
+		return NULL;
+	}
+
+	// calculate our maximum possible width
+	float width = maxHeight;
+	if (settings->ImperialUnits())
+		width += font.StringWidth("-99°");
+	else
+		width += font.StringWidth("-99.9°");
+
+	return new DeskbarWeatherView(BRect(0, 0, width, maxHeight - 1), settings); // 129 x 16 max?
 }
 
 
-DeskbarWeatherView::DeskbarWeatherView(BRect frame)
+DeskbarWeatherView::DeskbarWeatherView(BRect frame, WeatherSettings* settings)
 	:
 	BView(frame, kViewName, B_FOLLOW_NONE, B_WILL_DRAW),
 	fIcon(NULL),
 	fLocationProvider(NULL),
 	fLock("weather data lock"),
 	fMessageRunner(NULL),
-	fSettings(NULL),
+	fSettings(settings),
 	fWeather(NULL)
 {
 	_Init();
@@ -185,11 +205,9 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			fSettings->GetFont(newFont);
 			GetFont(&oldFont);
 			if (oldFont != newFont) {
-				//TODO calculate string width and see if we need to restart the replicant to change view size
 				SetFont(&newFont);
 				Invalidate();
 			}
-
 			break;
 		}
 		case kForceRefreshMessage:
@@ -252,16 +270,7 @@ DeskbarWeatherView::Draw(BRect updateRect)
 		SetHighColor(origColor);
 	}
 
-	font_height fontHeight;
-	GetFontHeight(&fontHeight);
-
-	float textY = (maxHeight / 2) + ((fontHeight.ascent - fontHeight.descent) / 2);
-
-	// maxHeight + 1 moves to 17 in the X to give an extra pixel padding
-	MovePenTo(maxHeight + 1, textY + 1);
-
 	BString tempString;
-	//TODO fix text being cut off during decimal display in celsius mode
 	if (fWeather != NULL && fWeather->Current() != NULL)
 		if (fSettings->ImperialUnits())
 			tempString << fWeather->Current()->iTemp() << "°";
@@ -269,6 +278,14 @@ DeskbarWeatherView::Draw(BRect updateRect)
 			tempString.SetToFormat("%.1f°", fWeather->Current()->Temp());
 	else
 		tempString << "??°";
+
+	font_height fontHeight;
+	GetFontHeight(&fontHeight);
+
+	float textX = maxHeight + 1;
+	//FIXME textY calculation isn't quite right
+	float textY = (maxHeight / 2) + ((fontHeight.ascent - fontHeight.descent) / 2);
+	MovePenTo(textX, textY);
 
 	DrawString(tempString.String());
 
@@ -301,9 +318,13 @@ DeskbarWeatherView::_Init()
 		(new BAlert("Error", "Data lock failed InitCheck()!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 		//TODO exit app
 
-	fSettings = new WeatherSettings();
-	if (fSettings->InitCheck() != B_OK)
-		(new BAlert("Error", "Settings failed InitCheck()!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
+	if (fSettings == NULL) {
+		fSettings = new WeatherSettings();
+		if (fSettings->InitCheck() != B_OK) {
+			(new BAlert("Error", "Settings failed InitCheck()!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
+			return;
+		}
+	}
 
 	fIcon = LoadResourceBitmap("unknown", Bounds().Height() - 1);
 

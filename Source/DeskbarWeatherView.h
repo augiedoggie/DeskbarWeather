@@ -44,7 +44,7 @@ class WeatherSettings;
 class DeskbarWeatherView : public BView {
 
 public:
-						DeskbarWeatherView(BRect frame);
+						DeskbarWeatherView(BRect frame, WeatherSettings* settings);
 						DeskbarWeatherView(BMessage* message);
 						~DeskbarWeatherView();
 
@@ -63,7 +63,6 @@ private:
 			void		_AboutRequested();
 			void		_Init();
 			status_t	_CheckMessageRunner();
-			void		_Configure();
 			void		_RefreshComplete(BMessage* message);
 			void		_GeoLookupComplete(BMessage* message);
 			void		_RemoveFromDeskbar();
