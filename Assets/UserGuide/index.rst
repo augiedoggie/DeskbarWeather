@@ -41,6 +41,22 @@ Deskbar Operation
 
 
 
+Command Line Options
+--------------------
+
+DeskbarWeather has several command line options to allow control by the `Shortcuts` preferences application included with Haiku.
+
+.. code-block:: none
+   :class: terminal
+
+   ~> DeskbarWeather --help
+   Usage: DeskbarWeather [option]
+        --forecast              Show forecast window
+        --refresh               Refresh weather
+        --geolookup             Refresh geolocation
+
+
+
 Preferences
 -----------
 
@@ -64,13 +80,7 @@ Refresh Interval
 
 Set how often the weather conditions should be updated.
 
-When "Manual refresh only" is selected then the updates will only happen by choosing the "Refresh Weather" menu item or by sending a BMessage.
-Sending a BMessage using the `hey` command allows assigning a keyboard command using the Shortcuts app which will start a refresh.
-
-.. code-block:: none
-   :class: terminal
-
-   hey Deskbar let View of Replicant "DeskbarWeatherView" of Shelf of View Status of Window Deskbar do 'FrGw'
+When "Manual refresh only" is selected then the updates will only happen by choosing the "Refresh Weather" menu item or by using the `command line options <#command-line-options>`_.
 
 
 
