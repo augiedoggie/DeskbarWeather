@@ -152,6 +152,8 @@ DeskbarWeatherView::MouseDown(BPoint point)
 
 	if (buttons == B_PRIMARY_MOUSE_BUTTON)
 		_ShowForecastWindow(true);
+	else if (buttons == B_TERTIARY_MOUSE_BUTTON)
+		_ForceRefresh();
 	else
 		_ShowPopUpMenu(point);
 }
