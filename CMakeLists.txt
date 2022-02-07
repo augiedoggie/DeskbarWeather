@@ -18,6 +18,11 @@ else()
 	message("Generating user guide is disabled.")
 endif()
 
+set(PACKAGE_DOCUMENTATION_DIR "" CACHE FILEPATH "Location of documentation when building as a package")
+if(PACKAGE_DOCUMENTATION_DIR)
+	add_definitions("-DPACKAGE_DOCUMENTATION_DIR=\"${PACKAGE_DOCUMENTATION_DIR}\"")
+endif()
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 option(USE_CLANG "Enable building with clang instead of gcc" OFF)

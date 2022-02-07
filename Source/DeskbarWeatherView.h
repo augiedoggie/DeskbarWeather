@@ -11,7 +11,7 @@
 enum {
 	kForecastWindowMessage = 'WnGw',
 	kSettingsMessage = 'CfGw',
-	kHelpMessage = 'HpGw',
+	kUserGuideMessage = 'UgGw',
 	kGithubMessage = 'GhGw',
 	kQuitMessage = 'QuGw',
 	kRefreshMessage = 'RqGw',
@@ -68,8 +68,7 @@ private:
 			void		_GeoLookupComplete(BMessage* message);
 			void		_RemoveFromDeskbar();
 			void		_ShowPopUpMenu(BPoint point);
-			void		_OpenWebSite();
-			void		_OpenFolder();
+			void		_OpenUserGuide();
 			void		_ShowErrorNotification(const char* title, const char* content);
 			void		_ShowForecastWindow(bool toggle = false);
 			void		_ShowSettingsWindow();

@@ -217,6 +217,9 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 
 			break;
 		}
+		case kUserGuideMessage:
+			_OpenUserGuide();
+			break;
 		case kQuitMessage:
 			_RemoveFromDeskbar();
 			break;
@@ -573,8 +576,7 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 		.AddMenu("Help")
 			.GetMenu(helpMenu)
 			.AddItem("About DeskbarWeather", B_ABOUT_REQUESTED)
-			.AddItem("Open User Guide", kHelpMessage)
-				.SetEnabled(false)  //TODO write code to open the user guide
+			.AddItem("Open User Guide", kUserGuideMessage)
 			.AddItem("Open Github Page", kGithubMessage)
 		.End()
 		.AddItem("Preferences" B_UTF8_ELLIPSIS, kSettingsMessage)
@@ -587,6 +589,32 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 	popupMenu->Go(ConvertToScreen(point), true, true);
 
 	delete popupMenu;
+}
+
+
+void
+DeskbarWeatherView::_OpenUserGuide()
+{
+	BPath indexLocation;
+
+#if defined(PACKAGE_DOCUMENTATION_DIR)
+	indexLocation.SetTo(PACKAGE_DOCUMENTATION_DIR);
+#else
+	image_info image;
+	if (DeskbarWeatherView::GetAppImage(image) != B_OK)
+		return;
+
+	BPath exePath(image.name);
+	exePath.GetParent(&indexLocation);
+#endif
+
+	indexLocation.Append("UserGuide/index.html");
+
+	const char* args[] = { indexLocation.Path(), NULL };
+
+	status_t rc = be_roster->Launch("application/x-vnd.Be.URL.https", 1, args);
+	if (rc != B_OK && rc != B_ALREADY_RUNNING)
+		(new BAlert("Error", "Failed to launch URL", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
 }
 
 
