@@ -300,18 +300,15 @@ OpenWeather::_ParseDay(BMessage& data, bool imperial)
 			condition->SetIcon("sunny");
 			break;
 		case 2:
-			condition->SetIcon("partlycloudy");
-			break;
 		case 3:
-			condition->SetIcon("mostlycloudy");
+			condition->SetIcon("partlycloudy");
 			break;
 		case 4:
 			condition->SetIcon("cloudy");
 			break;
 		case 9:
-			condition->SetIcon("rain");
-			break;
 		case 10:
+		case 50:
 			condition->SetIcon("rain");
 			break;
 		case 11:
@@ -319,9 +316,6 @@ OpenWeather::_ParseDay(BMessage& data, bool imperial)
 			break;
 		case 13:
 			condition->SetIcon("snow");
-			break;
-		case 50:
-			condition->SetIcon("mist");
 			break;
 		default:
 			condition->SetIcon("unknown");
