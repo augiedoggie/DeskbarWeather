@@ -326,7 +326,7 @@ DeskbarWeatherView::_Init()
 		}
 	}
 
-	fIcon = LoadResourceBitmap("unknown", Bounds().Height() - 1);
+	fIcon = LoadResourceBitmap("unknown", Bounds().Height());
 
 	BFont font;
 	if (fSettings->GetFont(font) == B_OK)
@@ -482,7 +482,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 		_ShowErrorNotification("Weather Refresh Error", response);
 
 	delete fIcon;
-	fIcon = LoadResourceBitmap(fWeather->Current()->Icon()->String(), Bounds().Height() - 1);
+	fIcon = LoadResourceBitmap(fWeather->Current()->Icon()->String(), Bounds().Height());
 
 	BString updateStr;
 	fWeather->LastUpdate(updateStr);
