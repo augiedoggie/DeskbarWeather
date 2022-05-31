@@ -478,8 +478,10 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 				notification.Send();
 			}
 		}
-	} else
+	} else {
 		_ShowErrorNotification("Weather Refresh Error", response);
+		return;
+	}
 
 	delete fIcon;
 	fIcon = LoadResourceBitmap(fWeather->Current()->Icon()->String(), Bounds().Height());
