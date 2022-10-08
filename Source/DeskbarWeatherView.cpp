@@ -265,7 +265,7 @@ DeskbarWeatherView::Draw(BRect updateRect)
 	} else {
 		BRect iconRect(0, 0, maxHeight - 1, maxHeight - 1);
 		rgb_color origColor = HighColor();
-		SetHighColor({ 0, 100, 255, 255 });
+		SetHighColor(0, 100, 255, 255);
 		FillRect(iconRect);
 		SetHighColor(origColor);
 	}
