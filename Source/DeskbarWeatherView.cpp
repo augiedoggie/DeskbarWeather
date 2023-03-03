@@ -359,7 +359,7 @@ DeskbarWeatherView::_CheckMessageRunner()
 	if (fMessageRunner == NULL) {
 		BMessage bufMsg(kForceRefreshMessage);
 		fMessageRunner = new BMessageRunner(BMessenger(this), &bufMsg, (bigtime_t)fSettings->RefreshInterval() * 60000000, -1);
-		//TODO force refresh here because we've switched manual->automatic?
+		_ForceRefresh(); //force refresh because we've switched manual->automatic or an API key was entered
 	} else
 		fMessageRunner->SetInterval((bigtime_t)fSettings->RefreshInterval() * 60000000);
 
