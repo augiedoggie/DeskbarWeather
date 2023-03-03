@@ -163,7 +163,10 @@ WeatherSettings::ApiKey()
 void
 WeatherSettings::SetApiKey(const char* key)
 {
-	SetString(kApiKey, key);
+	if (key == NULL)
+		RemoveName(kApiKey);
+	else
+		SetString(kApiKey, key);
 }
 
 
