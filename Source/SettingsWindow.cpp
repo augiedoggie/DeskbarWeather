@@ -372,10 +372,12 @@ SettingsWindow::_SaveSettings()
 		needRefresh = true;
 	}
 
-	if (strcmp(fSettings->Location(), fLocationControl->Text()) != 0) {
-		fSettings->SetLocation(fLocationControl->Text());
-		needRefresh = true;
-	}
+	//TODO a geolocation request might have changed our location name while the window was open (on first run)
+	//this should be enabled/fixed whenever manual location selection is implemented
+//	if (strcmp(fSettings->Location(), fLocationControl->Text()) != 0) {
+//		fSettings->SetLocation(fLocationControl->Text());
+//		needRefresh = true;
+//	}
 
 	if (fSettings->RefreshInterval() != fSettingsCache->RefreshInterval())
 		needRefresh = true;
