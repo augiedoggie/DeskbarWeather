@@ -367,7 +367,7 @@ SettingsWindow::_SaveSettings()
 	if (fSettings->ApiKey() == NULL && strlen(text) > 0) {
 		fSettings->SetApiKey(text);
 		needRefresh = true;
-	} else if (strcmp(fSettings->ApiKey(), text) != 0) {
+	} else if (fSettings->ApiKey() != NULL && strcmp(fSettings->ApiKey(), text) != 0) {
 		fSettings->SetApiKey(strlen(text) == 0 ? NULL : text);
 		needRefresh = true;
 	}
