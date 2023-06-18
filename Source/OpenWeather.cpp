@@ -141,8 +141,10 @@ OpenWeather::ParseResult(BMessage& data, bool imperial)
 #endif
 
 	BMessage currentMsg;
-	if (fOpenWeatherMessage->FindMessage("current", &currentMsg) == B_OK)
-		fCurrent = _ParseDay(currentMsg, imperial);
+	if (fOpenWeatherMessage->FindMessage("current", &currentMsg) != B_OK)
+		return B_ERROR;
+
+	fCurrent = _ParseDay(currentMsg, imperial);
 
 	fLastUpdateTime = fCurrent->Day();
 

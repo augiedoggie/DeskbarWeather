@@ -454,10 +454,11 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	BString response(message->GetString("re:message", "BMessage Error"));
 
 	if (BHttpRequest::IsSuccessStatusCode(status)) {
-		if (fWeather->ParseResult(*message, fSettings->ImperialUnits()) != B_OK)
+		if (fWeather->ParseResult(*message, fSettings->ImperialUnits()) != B_OK) {
 			//TODO add a more descriptive error message
 			_ShowErrorNotification("Json Parse Error", "There was an error parsing the returned weather data!");
-		else if (fSettings->UseNotification()) {
+			return;
+		} else if (fSettings->UseNotification()) {
 			BNotification notification(B_INFORMATION_NOTIFICATION);
 			if (notification.InitCheck() == B_OK) {
 				notification.SetGroup("DeskbarWeather");
