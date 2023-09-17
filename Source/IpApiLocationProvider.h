@@ -10,11 +10,13 @@
 class BInvoker;
 class BMessage;
 class BString;
-namespace BPrivate {
-	namespace Network {
-		class BUrlRequest;
-	}
+namespace BPrivate
+{
+namespace Network
+{
+	class BUrlRequest;
 }
+} // namespace BPrivate
 
 static const char* kGeoLookupCacheKey = "dw:GeoLookupCache";
 
@@ -38,4 +40,4 @@ private:
 		BUrlRequest*		fUrlRequest;
 };
 
-#endif	// _IPAPILOCATIONPROVIDER_H_
+#endif // _IPAPILOCATIONPROVIDER_H_

@@ -20,10 +20,10 @@
 ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* location, bool compact)
 	:
 	BWindow(frame, location, B_FLOATING_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
-			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE)
+		B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE)
 {
 	BFont bigFont(be_bold_font);
-	bigFont.SetSize(bigFont.Size()+(compact ? 2 : 4));
+	bigFont.SetSize(bigFont.Size() + (compact ? 2 : 4));
 
 	BString windowTitle("Weather Conditions & Forecast for ");
 	windowTitle << location;
@@ -42,6 +42,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 	BGridLayout* otherGrid;
 
 	BGroupView* currentView = new BGroupView(B_HORIZONTAL, compact ? 0 : B_USE_BIG_SPACING);
+	// clang-format off
 	BLayoutBuilder::Group<>(currentView, B_HORIZONTAL, compact ? 0 : B_USE_BIG_SPACING)
 		.SetInsets(compact ? 0 : B_USE_BIG_INSETS)
 		.AddGlue()
@@ -83,6 +84,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			.SetColumnWeight(0, 0)
 		)
 		.AddGlue();
+	// clang-format on
 
 	otherGrid->AlignLayoutWith(tempGrid, B_VERTICAL);
 
@@ -105,6 +107,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 		BString highString;
 		highString << condition->iHigh() << "°";
 
+		// clang-format off
 		forecastBuilder
 			.AddGroup(B_VERTICAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
 				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
@@ -134,6 +137,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 					.AddGlue()
 				.End()
 			.End();
+		// clang-format on
 
 		if (forecastList->ItemAt(i + 1) != NULL) {
 			BView* separatorView = new BView("SeparatorView", B_WILL_DRAW);

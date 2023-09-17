@@ -3,10 +3,10 @@
 
 #include "WeatherSettings.h"
 
-#include <Path.h>
 #include <File.h>
 #include <FindDirectory.h>
 #include <Font.h>
+#include <Path.h>
 
 
 const char* kPrefsFileName = "DeskbarWeatherSettings";

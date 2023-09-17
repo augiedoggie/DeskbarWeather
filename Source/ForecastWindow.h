@@ -23,4 +23,4 @@ private:
 };
 
 
-#endif	// _FORECASTWINDOW_H_
+#endif // _FORECASTWINDOW_H_

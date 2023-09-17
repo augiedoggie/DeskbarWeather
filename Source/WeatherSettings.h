@@ -48,4 +48,4 @@ public:
 	bool		CompactForecast();
 };
 
-#endif	// _WEATHERSETTINGS_H_
+#endif // _WEATHERSETTINGS_H_

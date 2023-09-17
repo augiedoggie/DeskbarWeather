@@ -13,7 +13,6 @@
 #include <PopUpMenu.h>
 #include <RadioButton.h>
 #include <StringView.h>
-
 #include <private/shared/AutoLocker.h>
 
 
@@ -34,7 +33,7 @@ enum {
 SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRect frame)
 	:
 	BWindow(frame, "DeskbarWeather Preferences", B_FLOATING_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
-			B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
+		B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
 	fCompactBox(NULL),
 	fGeoNotificationBox(NULL),
 	fImperialButton(NULL),
@@ -86,6 +85,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 	BButton* closeButton = new BButton("CloseButton", "Close", new BMessage(B_QUIT_REQUESTED));
 	closeButton->MakeDefault(true);
 
+	// clang-format off
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddGrid(0.0, B_USE_HALF_ITEM_INSETS)
@@ -117,7 +117,8 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 			.Add(new BButton("RevertButton", "Revert", new BMessage(kRevertButtonMessage)))
 			.Add(closeButton)
 		.End()
-		.End();
+	.End();
+	// clang-format on
 
 	_InitControls();
 

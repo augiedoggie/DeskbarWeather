@@ -19,7 +19,7 @@ JsonRequestListener::~JsonRequestListener() {}
 
 
 void
-JsonRequestListener::RequestCompleted(BUrlRequest *caller, bool /*success*/)
+JsonRequestListener::RequestCompleted(BUrlRequest* caller, bool /*success*/)
 {
 	if (fInvoker == NULL)
 		return;

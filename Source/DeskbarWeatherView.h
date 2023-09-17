@@ -22,15 +22,15 @@ enum {
 };
 
 #ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
 static const char* kViewName = "DeskbarWeatherView";
 static const char* kAppMimetype = "application/x-vnd.cpr.DeskbarWeather";
 
 #ifdef __GNUC__
-#pragma GCC diagnostic pop
+	#pragma GCC diagnostic pop
 #endif
 
 class BBitmap;
@@ -82,4 +82,4 @@ private:
 };
 
 
-#endif	// _DESKBARWEATHERVIEW_H_
+#endif // _DESKBARWEATHERVIEW_H_

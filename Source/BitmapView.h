@@ -22,4 +22,4 @@ private:
 	BBitmap*		fBitmap;
 };
 
-#endif	// _BITMAPVIEW_H_
+#endif // _BITMAPVIEW_H_

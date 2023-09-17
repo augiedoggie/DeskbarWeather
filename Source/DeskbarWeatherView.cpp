@@ -3,8 +3,8 @@
 
 #include "DeskbarWeatherView.h"
 #include "Condition.h"
-#include "IpApiLocationProvider.h"
 #include "ForecastWindow.h"
+#include "IpApiLocationProvider.h"
 #include "OpenWeather.h"
 #include "SettingsWindow.h"
 #include "WeatherSettings.h"
@@ -35,7 +35,8 @@ using namespace BPrivate::Network;
 const char* kGithubURL = "https://github.com/augiedoggie/DeskbarWeather/";
 
 
-extern "C" _EXPORT BView* instantiate_deskbar_item(float /* maxWidth */, float maxHeight)
+extern "C" _EXPORT BView*
+instantiate_deskbar_item(float /* maxWidth */, float maxHeight)
 {
 	// load our settings so we can get our chosen font
 	WeatherSettings* settings = new WeatherSettings();
@@ -146,7 +147,7 @@ DeskbarWeatherView::AttachedToWindow()
 
 	AutoLocker<WeatherSettings> slocker(fSettings);
 	fWeather = new OpenWeather(fSettings->ApiKey(), fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits(),
-								new BInvoker(new BMessage(kRefreshMessage), this));
+		new BInvoker(new BMessage(kRefreshMessage), this));
 
 	_CheckMessageRunner();
 
@@ -227,7 +228,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			break;
 		case kGithubMessage:
 		{
-			const char* args[] = { kGithubURL, NULL };
+			const char* args[] = {kGithubURL, NULL};
 
 			status_t rc = be_roster->Launch("application/x-vnd.Be.URL.https", 1, args);
 			if (rc != B_OK && rc != B_ALREADY_RUNNING)
@@ -302,7 +303,7 @@ DeskbarWeatherView::_AboutRequested()
 
 	window->AddCopyright(2021, "Chris Roberts");
 
-	const char* authors[] = { "Chris Roberts", NULL };
+	const char* authors[] = {"Chris Roberts", NULL};
 	window->AddAuthors(authors);
 
 	//TODO show git hash in the version
@@ -316,7 +317,7 @@ DeskbarWeatherView::_Init()
 {
 	if (fLock.InitCheck() != B_OK)
 		(new BAlert("Error", "Data lock failed InitCheck()!", "Ok", NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT))->Go();
-		//TODO exit app
+	//TODO exit app
 
 	if (fSettings == NULL) {
 		fSettings = new WeatherSettings();
@@ -424,7 +425,7 @@ DeskbarWeatherView::_ForceRefresh()
 
 	//TODO check if we have a valid location(latitude/longitude)
 
-	if (fMessageRunner == NULL)  // may not have been started if no api key was set
+	if (fMessageRunner == NULL) // may not have been started if no api key was set
 		_CheckMessageRunner();
 
 	fWeather->Refresh();
@@ -586,6 +587,7 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 	AutoLocker<WeatherSettings> slocker(fSettings);
 	BMenu* helpMenu = NULL;
 	BPopUpMenu* popupMenu = new BPopUpMenu("Menu");
+	// clang-format off
 	BLayoutBuilder::Menu<>(popupMenu)
 		.AddItem("Open Forecast Window", kForecastWindowMessage)
 			// disable item if we have no current data to show
@@ -606,6 +608,7 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 		.AddItem("Preferences" B_UTF8_ELLIPSIS, kSettingsMessage)
 		.AddSeparator()
 		.AddItem("Quit", kQuitMessage);
+	// clang-format on
 
 	helpMenu->SetTargetForItems(this);
 	popupMenu->SetTargetForItems(this);
@@ -634,7 +637,7 @@ DeskbarWeatherView::_OpenUserGuide()
 
 	indexLocation.Append("UserGuide/index.html");
 
-	const char* args[] = { indexLocation.Path(), NULL };
+	const char* args[] = {indexLocation.Path(), NULL};
 
 	status_t rc = be_roster->Launch("application/x-vnd.Be.URL.https", 1, args);
 	if (rc != B_OK && rc != B_ALREADY_RUNNING)

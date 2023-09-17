@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2021 Chris Roberts
 
-#include <iostream>
+#include "DeskbarWeatherView.h"
 
-#include <Application.h>
 #include <Alert.h>
+#include <Application.h>
 #include <Deskbar.h>
 #include <Roster.h>
 #include <String.h>
-
-#include "DeskbarWeatherView.h"
+#include <iostream>
 
 
 class DeskbarWeatherApp : public BApplication {
 public:
 	DeskbarWeatherApp()
-		:	BApplication(kAppMimetype) {}
+		:
+		BApplication(kAppMimetype) {}
 
 private:
 	void
@@ -52,14 +52,14 @@ private:
 			reply.PrintToStream();
 			return B_ERROR;
 		}
-	
+
 		BMessage message(what);
 		if (replicantMessenger.SendMessage(what, &reply) != B_OK) {
 			std::cout << "Error: couldn't send command to replicant messenger" << std::endl;
 			reply.PrintToStream();
 			return B_ERROR;
 		}
-	
+
 		return B_OK;
 	}
 
@@ -92,7 +92,7 @@ public:
 	ReadyToRun()
 	{
 		BDeskbar deskbar;
-	
+
 		if (!deskbar.HasItem(kViewName)) {
 			app_info info;
 			status_t result = be_roster->GetRunningAppInfo(find_thread(NULL), &info);

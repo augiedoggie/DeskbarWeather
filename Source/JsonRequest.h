@@ -6,11 +6,14 @@
 
 #include <private/netservices/UrlProtocolListener.h>
 
-namespace BPrivate {
-	namespace Network {
-		class BUrlRequest;
-	}
+namespace BPrivate
+{
+namespace Network
+{
+	class BUrlRequest;
 }
+} // namespace BPrivate
+
 class BInvoker;
 class BMallocIO;
 
@@ -26,4 +29,4 @@ private:
 			BInvoker*	fInvoker;
 };
 
-#endif	// _JSONREQUEST_H_
+#endif // _JSONREQUEST_H_

@@ -57,4 +57,4 @@ private:
 			double		fHighTemp;
 };
 
-#endif	// _CONDITION_H_
+#endif // _CONDITION_H_

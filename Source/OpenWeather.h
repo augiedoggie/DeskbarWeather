@@ -13,17 +13,19 @@ class BInvoker;
 class BMessage;
 class BString;
 class BUrl;
-namespace BPrivate {
-	namespace Network {
-		class BUrlRequest;
-	}
+namespace BPrivate
+{
+namespace Network
+{
+	class BUrlRequest;
 }
+} // namespace BPrivate
+
 
 using namespace BPrivate::Network;
 
 
 class OpenWeather {
-
 public:
 
 						OpenWeather(const char* apikey, double latitude, double longitude, bool imperial, BInvoker* invoker);
@@ -55,4 +57,4 @@ private:
 };
 
 
-#endif	// _OPENWEATHER_H_
+#endif // _OPENWEATHER_H_
