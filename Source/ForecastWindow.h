@@ -10,13 +10,13 @@
 class BBitmap;
 class BStringView;
 
-class OpenWeather;
+class OpenMeteo;
 
 
 class ForecastWindow : public BWindow {
 
 public:
-		ForecastWindow(OpenWeather* weather, BRect frame, const char* location, bool compact);
+		ForecastWindow(OpenMeteo* weather, BRect frame, const char* location, bool compact);
 
 private:
 		BStringView*	_BuildStringView(const char* name, const char* label, alignment align, BFont* font = NULL);

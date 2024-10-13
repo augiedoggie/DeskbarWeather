@@ -5,7 +5,7 @@
 #include "Condition.h"
 #include "ForecastWindow.h"
 #include "IpApiLocationProvider.h"
-#include "OpenWeather.h"
+#include "OpenMeteo.h"
 #include "SettingsWindow.h"
 #include "WeatherSettings.h"
 
@@ -146,7 +146,7 @@ DeskbarWeatherView::AttachedToWindow()
 	SetLowColor(ViewColor());
 
 	AutoLocker<WeatherSettings> slocker(fSettings);
-	fWeather = new OpenWeather(fSettings->ApiKey(), fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits(),
+	fWeather = new OpenMeteo(fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits(),
 		new BInvoker(new BMessage(kRefreshMessage), this));
 
 	_CheckMessageRunner();
@@ -197,7 +197,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			if (!message->HasBool("skiprefresh")) {
 				// something changed and we need a new location/weather request
 				//TODO check for geolocation status change
-				fWeather->RebuildRequestUrl(fSettings->ApiKey(), fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits());
+				fWeather->RebuildRequestUrl(fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits());
 				_CheckMessageRunner();
 			}
 
@@ -342,12 +342,6 @@ DeskbarWeatherView::_CheckMessageRunner()
 	if (!fSettings->IsLocked())
 		return B_ERROR;
 
-	if (fSettings->ApiKey() == NULL) {
-		BMessenger(this).SendMessage(kSettingsMessage);
-		SetToolTip("ERROR: API Key not set");
-		return B_ERROR;
-	}
-
 	//TODO check if we have a valid location(latitude/longitude)
 
 	if (fSettings->RefreshInterval() == 999999) {
@@ -420,8 +414,6 @@ void
 DeskbarWeatherView::_ForceRefresh()
 {
 	AutoLocker<WeatherSettings> slocker(fSettings);
-	if (fSettings->ApiKey() == NULL)
-		return;
 
 	//TODO check if we have a valid location(latitude/longitude)
 
@@ -455,7 +447,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	BString response(message->GetString("re:message", "BMessage Error"));
 
 	if (BHttpRequest::IsSuccessStatusCode(status)) {
-		if (fWeather->ParseResult(*message, fSettings->ImperialUnits()) != B_OK) {
+		if (fWeather->ParseResult(*message) != B_OK) {
 			//TODO add a more descriptive error message
 			_ShowErrorNotification("Json Parse Error", "There was an error parsing the returned weather data!");
 			return;
@@ -595,7 +587,7 @@ DeskbarWeatherView::_ShowPopUpMenu(BPoint point)
 		.AddSeparator()
 		.AddItem("Refresh Weather", kForceRefreshMessage)
 			// disable item if we have no weather provider initialized
-			.SetEnabled(fWeather != NULL && fSettings->ApiKey() != NULL)
+			.SetEnabled(fWeather != NULL)
 		.AddItem("Refresh GeoLocation", kForceGeoLocationMessage)
 			.SetEnabled(fSettings->UseGeoLocation())
 		.AddSeparator()

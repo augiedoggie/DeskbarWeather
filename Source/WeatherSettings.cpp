@@ -14,7 +14,6 @@ const char* kPrefsFileName = "DeskbarWeatherSettings";
 const char* kLocationKey = "dw:Location";
 const char* kIntervalKey = "dw:RefreshInterval";
 const char* kUseImperialKey = "dw:UseImperial";
-const char* kApiKey = "dw:ApiKey";
 const char* kUseGeoLocationKey = "dw:UseGeoLocation";
 const char* kUseGeoNotificationKey = "dw:UseGeoNotification";
 const char* kUseNotificationKey = "dw:UseNotification";
@@ -30,7 +29,7 @@ const char* kDefaultLocation = "Rapa Nui";
 const double kDefaultLatitude = -27.116667;
 const double kDefaultLongitude = -109.366667;
 
-const int32 kDefaultInterval = 10;
+const int32 kDefaultInterval = 15;
 const bool kImperialDefaultUnit = true;
 const bool kUseGeoLocationDefault = true;
 const bool kUseNotificationDefault = true;
@@ -147,26 +146,6 @@ double
 WeatherSettings::Longitude()
 {
 	return GetDouble(kLongitudeKey, kDefaultLongitude);
-}
-
-
-const char*
-WeatherSettings::ApiKey()
-{
-	const char* key = NULL;
-	FindString(kApiKey, (const char**)&key);
-
-	return key;
-}
-
-
-void
-WeatherSettings::SetApiKey(const char* key)
-{
-	if (key == NULL)
-		RemoveName(kApiKey);
-	else
-		SetString(kApiKey, key);
 }
 
 

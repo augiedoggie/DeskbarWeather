@@ -12,12 +12,12 @@ Condition::Condition()
 	:
 	fForecast(new BString()),
 	fHumidity(new BString()),
-	fWind(new BString()),
 	fIcon(new BString("unknown")),
 	fDay(-999),
 	fTemp(-999),
 	fLowTemp(-999),
-	fHighTemp(-999)
+	fHighTemp(-999),
+	fWind(-999)
 {}
 
 
@@ -25,7 +25,6 @@ Condition::~Condition()
 {
 	delete fForecast;
 	delete fHumidity;
-	delete fWind;
 	delete fIcon;
 }
 
@@ -132,13 +131,13 @@ Condition::Humidity()
 
 
 void
-Condition::SetWind(const char* wind)
+Condition::SetWind(double wind)
 {
-	fWind->SetTo(wind);
+	fWind = wind;
 }
 
 
-BString*
+double
 Condition::Wind()
 {
 	return fWind;

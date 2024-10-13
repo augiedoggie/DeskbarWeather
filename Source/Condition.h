@@ -36,8 +36,8 @@ public:
 			void		SetHumidity(double humidity);
 			BString*	Humidity();
 
-			void		SetWind(const char* wind);
-			BString*	Wind();
+			void		SetWind(double wind);
+			double		Wind();
 
 			void		SetIcon(const char* icon);
 			BString*	Icon();
@@ -48,13 +48,13 @@ public:
 private:
 			BString*	fForecast;
 			BString*	fHumidity;
-			BString*	fWind;
 			BString*	fIcon;
 			time_t		fDay;
 			double		fTemp;
 			double		fFeelsLike;
 			double		fLowTemp;
 			double		fHighTemp;
+			double		fWind;
 };
 
 #endif // _CONDITION_H_

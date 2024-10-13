@@ -23,7 +23,7 @@ haiku_add_executable(DeskbarWeather
 	ForecastWindow.cpp
 	IpApiLocationProvider.cpp
 	JsonRequest.cpp
-	OpenWeather.cpp
+	OpenMeteo.cpp
 	SettingsWindow.cpp
 	WeatherSettings.cpp
 )

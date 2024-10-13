@@ -5,7 +5,7 @@
 #include "BitmapView.h"
 #include "Condition.h"
 #include "DeskbarWeatherView.h"
-#include "OpenWeather.h"
+#include "OpenMeteo.h"
 
 #include <Bitmap.h>
 #include <Box.h>
@@ -17,7 +17,7 @@
 #include <StringView.h>
 
 
-ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* location, bool compact)
+ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* location, bool compact)
 	:
 	BWindow(frame, location, B_FLOATING_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
 		B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE)
@@ -37,6 +37,10 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 
 	BString currentHighString;
 	currentHighString << weather->Current()->iHigh() << "°";
+
+	BString currentWindString;
+	//TODO fixme, need to add kmh or mph units to string
+	currentWindString << weather->Current()->Wind();
 
 	BGridLayout* tempGrid;
 	BGridLayout* otherGrid;
@@ -80,7 +84,7 @@ ForecastWindow::ForecastWindow(OpenWeather* weather, BRect frame, const char* lo
 			.Add(_BuildStringView("HumidityLabel", "Humidity:", B_ALIGN_RIGHT, &bigFont), 0, 0)
 			.Add(_BuildStringView("HumidityString", weather->Current()->Humidity()->String(), B_ALIGN_LEFT, &bigFont), 1, 0)
 			.Add(_BuildStringView("WindLabel", "Wind:", B_ALIGN_RIGHT, &bigFont), 0, 1)
-			.Add(_BuildStringView("WindString", weather->Current()->Wind()->String(), B_ALIGN_LEFT, &bigFont), 1, 1)
+			.Add(_BuildStringView("WindString", currentWindString, B_ALIGN_LEFT, &bigFont), 1, 1)
 			.SetColumnWeight(0, 0)
 		)
 		.AddGlue();

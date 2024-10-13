@@ -37,7 +37,7 @@ class BBitmap;
 class BMessageRunner;
 
 class IpApiLocationProvider;
-class OpenWeather;
+class OpenMeteo;
 class WeatherSettings;
 
 
@@ -78,7 +78,7 @@ private:
 	BLocker					fLock;
 	BMessageRunner*			fMessageRunner;
 	WeatherSettings*		fSettings;
-	OpenWeather*			fWeather;
+	OpenMeteo*			fWeather;
 };
 
 

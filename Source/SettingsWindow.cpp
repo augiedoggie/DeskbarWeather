@@ -49,12 +49,9 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 {
 	AutoLocker<WeatherSettings> slocker(fSettings);
 
-	fApiKeyControl = new BTextControl("ApiKeyControl", "API Key:", fSettings->ApiKey(), NULL);
-	fApiKeyControl->TextView()->SetExplicitMinSize(BSize(200.0, B_SIZE_UNSET));
-
 	BPopUpMenu* intervalMenu = new BPopUpMenu("IntervalMenu");
 	BLayoutBuilder::Menu<>(intervalMenu)
-		.AddItem("10 minutes", 10)
+		.AddItem("15 minutes", 15)
 		.AddItem("30 minutes", 30)
 		.AddItem("1 hour", 60)
 		.AddItem("2 hours", 180)
@@ -89,27 +86,26 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.AddGrid(0.0, B_USE_HALF_ITEM_INSETS)
-			.AddTextControl(fApiKeyControl, 0, 0, B_ALIGN_RIGHT)
-			.AddMenuField(fIntervalMenuField, 0, 1, B_ALIGN_RIGHT)
-			.Add(fNotificationBox, 1, 2)
-			.Add(fShowForecastBox, 1, 3)
-			.AddTextControl(fLocationControl, 0, 4, B_ALIGN_RIGHT)
-			.Add(fLocationBox, 1, 5)
-			.Add(fGeoNotificationBox, 1, 6)
-			.AddGroup(B_HORIZONTAL, 0.0, 0, 7, 1, 1)
+			.AddMenuField(fIntervalMenuField, 0, 0, B_ALIGN_RIGHT)
+			.Add(fNotificationBox, 1, 1)
+			.Add(fShowForecastBox, 1, 2)
+			.AddTextControl(fLocationControl, 0, 3, B_ALIGN_RIGHT)
+			.Add(fLocationBox, 1, 4)
+			.Add(fGeoNotificationBox, 1, 5)
+			.AddGroup(B_HORIZONTAL, 0.0, 0, 6, 1, 1)
 				.SetExplicitAlignment(BAlignment(B_ALIGN_RIGHT, B_ALIGN_MIDDLE))
 				.Add(unitsView)
 				.AddStrut(be_control_look->DefaultLabelSpacing())
 			.End()
-			.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING, 1, 7, 1, 1)
+			.AddGroup(B_HORIZONTAL, B_USE_HALF_ITEM_SPACING, 1, 6, 1, 1)
 				.SetExplicitAlignment(BAlignment(B_ALIGN_LEFT, B_ALIGN_TOP))
 				.Add(fImperialButton)
 				.AddStrut(be_control_look->DefaultItemSpacing())
 				.Add(fMetricButton)
 			.End()
-			.AddMenuField(fontMenuField, 0, 8, B_ALIGN_RIGHT)
-			.Add(new BButton("ResetFontButton", "Reset font to default", new BMessage(kResetFontMessage)), 1, 9)
-			.Add(fCompactBox, 1, 10)
+			.AddMenuField(fontMenuField, 0, 7, B_ALIGN_RIGHT)
+			.Add(new BButton("ResetFontButton", "Reset font to default", new BMessage(kResetFontMessage)), 1, 8)
+			.Add(fCompactBox, 1, 9)
 		.End()
 		.Add(new BStringView("InfoStringView", "Changing font or units may require the app to be restarted to display properly"))
 		.AddGlue()
@@ -140,7 +136,7 @@ void
 SettingsWindow::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
-		case 10:
+		case 15:
 		case 30:
 		case 60:
 		case 180:
@@ -283,11 +279,6 @@ SettingsWindow::_RevertSettings()
 {
 	bool needRefresh = false;
 
-	if (strcmp(fSettings->ApiKey(), fSettingsCache->ApiKey()) != 0) {
-		fSettings->SetApiKey(fSettingsCache->ApiKey());
-		needRefresh = true;
-	}
-
 	if (fSettings->ImperialUnits() != fSettingsCache->ImperialUnits()) {
 		fSettings->SetImperialUnits(fSettingsCache->ImperialUnits());
 		needRefresh = true;
@@ -331,8 +322,6 @@ SettingsWindow::_InitControls()
 	else
 		fMetricButton->SetValue(1);
 
-	fApiKeyControl->SetText(fSettings->ApiKey());
-
 	fGeoNotificationBox->SetEnabled(fSettings->UseGeoLocation());
 	fGeoNotificationBox->SetValue(fSettings->UseGeoNotification());
 
@@ -363,15 +352,6 @@ void
 SettingsWindow::_SaveSettings()
 {
 	bool needRefresh = false;
-
-	const char* text = fApiKeyControl->Text();
-	if (fSettings->ApiKey() == NULL && strlen(text) > 0) {
-		fSettings->SetApiKey(text);
-		needRefresh = true;
-	} else if (fSettings->ApiKey() != NULL && strcmp(fSettings->ApiKey(), text) != 0) {
-		fSettings->SetApiKey(strlen(text) == 0 ? NULL : text);
-		needRefresh = true;
-	}
 
 	//TODO a geolocation request might have changed our location name while the window was open (on first run)
 	//this should be enabled/fixed whenever manual location selection is implemented

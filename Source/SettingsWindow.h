@@ -36,7 +36,6 @@ private:
 			status_t	_HandleFontChange(BMessage* message);
 			status_t	_UpdateFontMenu(const char* family, const char* style, double size);
 
-	BTextControl*		fApiKeyControl;
 	BCheckBox*			fCompactBox;
 	BCheckBox*			fGeoNotificationBox;
 	BRadioButton*		fImperialButton;

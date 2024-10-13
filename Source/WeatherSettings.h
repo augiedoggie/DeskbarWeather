@@ -30,8 +30,6 @@ public:
 	void		SetImperialUnits(bool useImperial);
 	int32		RefreshInterval();
 	void		SetRefreshInterval(int32 minutes);
-	void		SetApiKey(const char* key);
-	const char*	ApiKey();
 	void		SetUseGeoLocation(bool enabled);
 	bool		UseGeoLocation();
 	void		SetUseGeoNotification(bool enabled);
