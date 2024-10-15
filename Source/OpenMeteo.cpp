@@ -13,7 +13,6 @@
 #include <private/netservices/UrlRequest.h>
 
 
-//const char* kOpenMeteoUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=%f&lon=%f&exclude=minutely,hourly&units=%s&appid=%s";
 const char* kOpenMeteoUrl = 
 	"https://api.open-meteo.com/v1/forecast"
 	"?latitude=%f&longitude=%f"
@@ -191,7 +190,7 @@ OpenMeteo::_ParseCurrent(BMessage& data)
 	fCurrent->SetDay(data.GetDouble("time", -9999));
 
 	int32 weathercode = static_cast<int32>(data.GetDouble("weathercode", -99.0));
-	return _ParseWeatherCode(*fCurrent, weathercode);;
+	return _ParseWeatherCode(*fCurrent, weathercode);
 }
 
 
