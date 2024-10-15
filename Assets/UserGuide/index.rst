@@ -66,15 +66,6 @@ Preferences
 
 
 
-API Key
-^^^^^^^
-
-DeskbarWeather currently retrieves weather updates using the `OpenWeatherMap <https://www.openweathermap.org>`_ service.
-
-You must `sign up <https://home.openweathermap.org/users/sign_up>`_ for a free account and `obtain an API key <https://home.openweathermap.org/api_keys>`_
-
-
-
 Refresh Interval
 ^^^^^^^^^^^^^^^^
 
