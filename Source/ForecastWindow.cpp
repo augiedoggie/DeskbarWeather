@@ -32,6 +32,9 @@ ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* loca
 	BString currentString;
 	currentString << weather->Current()->Temp() << "°";
 
+	BString currentFeelString;
+	currentFeelString << weather->Current()->Temp(true) << "°";
+
 	BString currentLowString;
 	currentLowString << weather->Current()->iLow() << "°";
 
@@ -40,6 +43,12 @@ ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* loca
 
 	BString currentWindString;
 	currentWindString << weather->Current()->Wind() << (weather->IsImperial() ? " mph" : " kmh");
+
+	BString currentDirectionString;
+	currentDirectionString << weather->Current()->WindDirection() << "°";
+
+	BString currentCloudString;
+	currentCloudString << weather->Current()->CloudCover() << "%";
 
 	BGridLayout* tempGrid;
 	BGridLayout* otherGrid;
@@ -72,18 +81,24 @@ ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* loca
 		.Add(tempGrid = BLayoutBuilder::Grid<>(B_USE_HALF_ITEM_SPACING, compact ? 0 : B_USE_BIG_SPACING)
 			.Add(_BuildStringView("CurrentLabel", "Current:", B_ALIGN_RIGHT, &bigFont), 0, 0)
 			.Add(_BuildStringView("CurrentString", currentString.String(), B_ALIGN_LEFT, &bigFont), 1, 0)
-			.Add(_BuildStringView("HighLabel", "High:", B_ALIGN_RIGHT, &bigFont), 0, 1)
-			.Add(_BuildStringView("HighString", currentHighString.String(), B_ALIGN_LEFT, &bigFont), 1, 1)
-			.Add(_BuildStringView("LowLabel", "Low:", B_ALIGN_RIGHT, &bigFont), 0, 2)
-			.Add(_BuildStringView("LowLabel", currentLowString.String(), B_ALIGN_LEFT, &bigFont), 1, 2)
+			.Add(_BuildStringView("CurrentFeelLabel", "Feels like:", B_ALIGN_RIGHT, &bigFont), 0, 1)
+			.Add(_BuildStringView("CurrentFeelString", currentFeelString.String(), B_ALIGN_LEFT, &bigFont), 1, 1)
+			.Add(_BuildStringView("HighLabel", "High:", B_ALIGN_RIGHT, &bigFont), 0, 2)
+			.Add(_BuildStringView("HighString", currentHighString.String(), B_ALIGN_LEFT, &bigFont), 1, 2)
+			.Add(_BuildStringView("LowLabel", "Low:", B_ALIGN_RIGHT, &bigFont), 0, 3)
+			.Add(_BuildStringView("LowLabel", currentLowString.String(), B_ALIGN_LEFT, &bigFont), 1, 3)
 			.SetColumnWeight(0, 0)
 		)
 		.AddGlue()
 		.Add(otherGrid = BLayoutBuilder::Grid<>(B_USE_HALF_ITEM_SPACING, compact ? 0 : B_USE_BIG_SPACING)
 			.Add(_BuildStringView("HumidityLabel", "Humidity:", B_ALIGN_RIGHT, &bigFont), 0, 0)
 			.Add(_BuildStringView("HumidityString", weather->Current()->Humidity()->String(), B_ALIGN_LEFT, &bigFont), 1, 0)
-			.Add(_BuildStringView("WindLabel", "Wind:", B_ALIGN_RIGHT, &bigFont), 0, 1)
+			.Add(_BuildStringView("WindLabel", "Wind Speed:", B_ALIGN_RIGHT, &bigFont), 0, 1)
 			.Add(_BuildStringView("WindString", currentWindString, B_ALIGN_LEFT, &bigFont), 1, 1)
+			.Add(_BuildStringView("DirectionLabel", "Wind Direction:", B_ALIGN_RIGHT, &bigFont), 0, 2)
+			.Add(_BuildStringView("DirectionString", currentDirectionString, B_ALIGN_LEFT, &bigFont), 1, 2)
+			.Add(_BuildStringView("CloudLabel", "Cloud Cover:", B_ALIGN_RIGHT, &bigFont), 0, 3)
+			.Add(_BuildStringView("CloudString", currentCloudString, B_ALIGN_LEFT, &bigFont), 1, 3)
 			.SetColumnWeight(0, 0)
 		)
 		.AddGlue();

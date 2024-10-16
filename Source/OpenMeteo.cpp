@@ -20,7 +20,7 @@ const char* kOpenMeteoUrl =
 	"&temperature_unit=%s"
 	"&wind_speed_unit=%s"
 	"&timeformat=unixtime"
-	"&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weathercode"
+	"&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,cloud_cover,weathercode"
 	"&daily=temperature_2m_min,temperature_2m_max,weathercode";
 
 
@@ -194,8 +194,11 @@ OpenMeteo::_ParseCurrent(BMessage& data)
 {
 	fCurrent = new Condition();
 	fCurrent->SetTemp(data.GetDouble("temperature_2m", -99.0));
+	fCurrent->SetTemp(data.GetDouble("apparent_temperature", -99.0), true);
 	fCurrent->SetHumidity(data.GetDouble("relative_humidity_2m", -99.0) / 100);
 	fCurrent->SetWind(data.GetDouble("wind_speed_10m", -99.0));
+	fCurrent->SetWindDirection(data.GetDouble("wind_direction_10m", -99.0));
+	fCurrent->SetCloudCover(data.GetDouble("cloud_cover", -99.0));
 	fCurrent->SetDay(data.GetDouble("time", -9999));
 
 	int32 weathercode = static_cast<int32>(data.GetDouble("weathercode", -99.0));

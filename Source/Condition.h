@@ -39,6 +39,12 @@ public:
 			void		SetWind(double wind);
 			double		Wind();
 
+			void		SetWindDirection(double direction);
+			double		WindDirection();
+
+			void		SetCloudCover(double cloud);
+			double		CloudCover();
+
 			void		SetIcon(const char* icon);
 			BString*	Icon();
 
@@ -55,6 +61,8 @@ private:
 			double		fLowTemp;
 			double		fHighTemp;
 			double		fWind;
+			double		fWindDirection;
+			double		fCloudCover;
 };
 
 #endif // _CONDITION_H_

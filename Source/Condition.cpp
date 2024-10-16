@@ -17,7 +17,9 @@ Condition::Condition()
 	fTemp(-999),
 	fLowTemp(-999),
 	fHighTemp(-999),
-	fWind(-999)
+	fWind(-999),
+	fWindDirection(-999),
+	fCloudCover(-999)
 {}
 
 
@@ -141,6 +143,34 @@ double
 Condition::Wind()
 {
 	return fWind;
+}
+
+
+void
+Condition::SetWindDirection(double direction)
+{
+	fWindDirection = direction;
+}
+
+
+double
+Condition::WindDirection()
+{
+	return fWindDirection;
+}
+
+
+void
+Condition::SetCloudCover(double cloud)
+{
+	fCloudCover = cloud;
+}
+
+
+double
+Condition::CloudCover()
+{
+	return fCloudCover;
 }
 
 
