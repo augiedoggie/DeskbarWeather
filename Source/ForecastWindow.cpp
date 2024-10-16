@@ -48,7 +48,34 @@ ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* loca
 	currentWindString.SetToFormat("%.1f %s", weather->Current()->Wind(), (weather->IsImperial() ? " mph" : " kmh"));
 
 	BString currentDirectionString;
-	currentDirectionString.SetToFormat("%.0f°", weather->Current()->WindDirection());
+	BString directionSymbolString;
+	double direction = weather->Current()->WindDirection();
+	if (direction > 337.5 && direction <= 22.5) {
+		// north
+		directionSymbolString = "\u2191";
+	} else if (direction > 22.5 && direction <= 67.5) {
+		// north-east
+		directionSymbolString = "\u2197";
+	} else if (direction > 67.5 && direction <= 112.5) {
+		// east
+		directionSymbolString = "\u2192";
+	} else if (direction > 112.5 && direction <= 157.5) {
+		// south-east
+		directionSymbolString = "\u2198";
+	} else if (direction > 157.5 && direction <= 202.5) {
+		// south
+		directionSymbolString = "\u2193";
+	} else if (direction > 202.5 && direction <= 247.5) {
+		// south-west
+		directionSymbolString = "\u2199";
+	} else if (direction > 247.5 && direction <= 292.5) {
+		// west
+		directionSymbolString = "\u2190";
+	} else if (direction > 292.5 && direction <= 337.5) {
+		// north-west
+		directionSymbolString = "\u2196";
+	}
+	currentDirectionString.SetToFormat("%s %.0f°", directionSymbolString.String(), direction);
 
 	BString currentCloudString;
 	currentCloudString.SetToFormat("%.0f%%", weather->Current()->CloudCover());
