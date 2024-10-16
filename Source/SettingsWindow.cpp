@@ -26,6 +26,7 @@ enum {
 	kGeoNotificationCheckboxMessage	= 'GcGn',
 	kResetFontMessage				= 'GcRf',
 	kRevertButtonMessage			= 'GcRv',
+	kShowFeelsLikeCheckboxMessage	= 'DwFl',
 	kCompactCheckboxMessage			= 'DwCc'
 };
 
@@ -45,6 +46,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 	fNotificationBox(NULL),
 	fSettings(settings),
 	fSettingsCache(new WeatherSettings(dynamic_cast<const WeatherSettings&>(*settings))),
+	fShowFeelsLikeBox(NULL),
 	fShowForecastBox(NULL)
 {
 	AutoLocker<WeatherSettings> slocker(fSettings);
@@ -79,6 +81,8 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 
 	fCompactBox = new BCheckBox("CompactForecastBox", "Use compact forecast window", new BMessage(kCompactCheckboxMessage));
 
+	fShowFeelsLikeBox = new BCheckBox("ShowFeelsLikeBox", "Show \"Feels Like\" temperature in the Deskbar", new BMessage(kShowFeelsLikeCheckboxMessage));
+
 	BButton* closeButton = new BButton("CloseButton", "Close", new BMessage(B_QUIT_REQUESTED));
 	closeButton->MakeDefault(true);
 
@@ -106,6 +110,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 			.AddMenuField(fontMenuField, 0, 7, B_ALIGN_RIGHT)
 			.Add(new BButton("ResetFontButton", "Reset font to default", new BMessage(kResetFontMessage)), 1, 8)
 			.Add(fCompactBox, 1, 9)
+			.Add(fShowFeelsLikeBox, 1, 10)
 		.End()
 		.Add(new BStringView("InfoStringView", "Changing font or units may require the app to be restarted to display properly"))
 		.AddGlue()
@@ -156,6 +161,22 @@ SettingsWindow::MessageReceived(BMessage* message)
 
 			if (fSettings->CompactForecast() != value)
 				fSettings->SetCompactForecast(value);
+
+			break;
+		}
+		case kShowFeelsLikeCheckboxMessage:
+		{
+			AutoLocker<WeatherSettings> slocker(fSettings);
+			int32 value = message->GetInt32("be:value", -1);
+			if (value == -1)
+				break;
+
+			if (fSettings->ShowFeelsLike() != value)
+				fSettings->SetShowFeelsLike(value);
+
+			BMessage copy(*fInvoker->Message());
+			copy.AddBool("skiprefresh", true); // don't refresh the weather, just the UI
+			fInvoker->Invoke(&copy);
 
 			break;
 		}
@@ -338,6 +359,8 @@ SettingsWindow::_InitControls()
 	fShowForecastBox->SetValue(fSettings->NotificationClick());
 
 	fCompactBox->SetValue(fSettings->CompactForecast());
+
+	fShowFeelsLikeBox->SetValue(fSettings->ShowFeelsLike());
 
 	BMenu* intervalMenu = fIntervalMenuField->Menu();
 	BMenuItem* selectedItem = intervalMenu->FindItem(fSettings->RefreshInterval());

@@ -207,8 +207,8 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			GetFont(&oldFont);
 			if (oldFont != newFont) {
 				SetFont(&newFont);
-				Invalidate();
 			}
+			Invalidate();
 			break;
 		}
 		case kForceRefreshMessage:
@@ -274,9 +274,9 @@ DeskbarWeatherView::Draw(BRect updateRect)
 	BString tempString;
 	if (fWeather != NULL && fWeather->Current() != NULL)
 		if (fSettings->ImperialUnits())
-			tempString << fWeather->Current()->iTemp() << "°";
+			tempString << fWeather->Current()->iTemp(fSettings->ShowFeelsLike() ? true : false) << "°";
 		else
-			tempString.SetToFormat("%.1f°", fWeather->Current()->Temp());
+			tempString.SetToFormat("%.1f°", fWeather->Current()->Temp(fSettings->ShowFeelsLike() ? true : false));
 	else
 		tempString << "??°";
 

@@ -47,6 +47,7 @@ private:
 	BCheckBox*			fNotificationBox;
 	WeatherSettings*	fSettings;
 	WeatherSettings*	fSettingsCache;
+	BCheckBox*			fShowFeelsLikeBox;
 	BCheckBox*			fShowForecastBox;
 
 };

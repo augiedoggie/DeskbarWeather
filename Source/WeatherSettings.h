@@ -44,6 +44,8 @@ public:
 	void		ResetFont();
 	void		SetCompactForecast(bool enabled);
 	bool		CompactForecast();
+	void		SetShowFeelsLike(bool enabled);
+	bool		ShowFeelsLike();
 };
 
 #endif // _WEATHERSETTINGS_H_

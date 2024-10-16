@@ -51,7 +51,7 @@ ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* loca
 	currentDirectionString.SetToFormat("%.0f°", weather->Current()->WindDirection());
 
 	BString currentCloudString;
-	currentCloudString.SetToFormat("%.0f%", weather->Current()->CloudCover());
+	currentCloudString.SetToFormat("%.0f%%", weather->Current()->CloudCover());
 
 	BGridLayout* tempGrid;
 	BGridLayout* otherGrid;
