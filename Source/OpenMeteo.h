@@ -38,6 +38,7 @@ public:
 	status_t			LastUpdate(BString& output, bool longFormat = false);
 	BObjectList<Condition>*	Forecast();
 	status_t			ParseResult(BMessage& data);
+	bool				IsImperial();
 
 private:
 
@@ -54,6 +55,7 @@ private:
 	BUrl*					fApiUrl;
 	BMessage*				fOpenMeteoMessage;
 	BUrlRequest*			fUrlRequest;
+	bool					fImperial;
 };
 
 

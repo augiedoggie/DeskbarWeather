@@ -59,6 +59,8 @@ OpenMeteo::~OpenMeteo()
 void
 OpenMeteo::RebuildRequestUrl(double latitude, double longitude, bool imperial)
 {
+	fImperial = imperial;
+
 	//TODO check if latitude/longitude is set
 
 	bool needRefresh = false;
@@ -126,6 +128,13 @@ BObjectList<Condition>*
 OpenMeteo::Forecast()
 {
 	return fForecastList;
+}
+
+
+bool
+OpenMeteo::IsImperial()
+{
+	return fImperial;
 }
 
 

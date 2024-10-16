@@ -39,8 +39,7 @@ ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* loca
 	currentHighString << weather->Current()->iHigh() << "°";
 
 	BString currentWindString;
-	//TODO fixme, need to add kmh or mph units to string
-	currentWindString << weather->Current()->Wind();
+	currentWindString << weather->Current()->Wind() << (weather->IsImperial() ? " mph" : " kmh");
 
 	BGridLayout* tempGrid;
 	BGridLayout* otherGrid;
