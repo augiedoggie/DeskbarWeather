@@ -486,6 +486,12 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	BString tooltip;
 	tooltip << fSettings->Location() << "\n";
 	tooltip << fWeather->Current()->Forecast()->String() << "\n";
+	// if we're showing "Feels Like" in the Deskbar then show actual temp in the tooltip
+	if (fSettings->ShowFeelsLike())
+		tooltip << "Current: " << fWeather->Current()->Temp() << "°\n";
+	else
+		tooltip << "Feels Like: " << fWeather->Current()->Temp(true) << "°\n";
+
 	tooltip << "High: " << fWeather->Current()->iHigh() << "°\n";
 	tooltip << "Low: " << fWeather->Current()->iLow() << "°\n";
 	tooltip << "Updated: " << updateStr;
