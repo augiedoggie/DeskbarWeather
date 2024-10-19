@@ -50,7 +50,7 @@ ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* loca
 	BString currentDirectionString;
 	BString directionSymbolString;
 	double direction = weather->Current()->WindDirection();
-	if (direction > 337.5 && direction <= 22.5) {
+	if (direction > 337.5 || direction <= 22.5) {
 		// north
 		directionSymbolString = "\u2191";
 	} else if (direction > 22.5 && direction <= 67.5) {
