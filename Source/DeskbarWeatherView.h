@@ -78,7 +78,7 @@ private:
 	BLocker					fLock;
 	BMessageRunner*			fMessageRunner;
 	WeatherSettings*		fSettings;
-	OpenMeteo*			fWeather;
+	OpenMeteo*				fWeather;
 };
 
 
