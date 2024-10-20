@@ -19,6 +19,7 @@ const char* kOpenMeteoUrl =
 	"&timezone=auto"
 	"&temperature_unit=%s"
 	"&wind_speed_unit=%s"
+	"&precipitation_unit=%s"
 	"&timeformat=unixtime"
 	"&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,cloud_cover,weathercode"
 	"&daily=temperature_2m_min,temperature_2m_max,weathercode";
@@ -66,7 +67,7 @@ OpenMeteo::RebuildRequestUrl(double latitude, double longitude, bool imperial)
 	bool needRefresh = false;
 	BString urlStr;
 	urlStr.SetToFormat(kOpenMeteoUrl, latitude, longitude,
-					   imperial ? "fahrenheit" : "celsius", imperial ? "mph" : "kmh");
+					   imperial ? "fahrenheit" : "celsius", imperial ? "mph" : "kmh", imperial ? "inch" : "mm");
 
 	if (fApiUrl != NULL) {
 		if (fApiUrl->UrlString() == urlStr)
