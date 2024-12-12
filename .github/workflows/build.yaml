@@ -22,12 +22,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build project
-        uses: korli/action@v0.25.0-haiku
+        uses: korli/action@v0.25.0-haiku1
         with:
           operating_system: ${{ matrix.config.os }}
           version: ${{ matrix.config.version }}
           architecture: ${{ matrix.config.architecture }}
           run: |
-            ssh user@localhost "pkgman update -y cmd:cmake" &&
+            ssh user@localhost "pkgman update -y cmd:cmake cmd:make cmd:gcc cmd:as" &&
             cmake -B build -S Source &&
             make -C build
