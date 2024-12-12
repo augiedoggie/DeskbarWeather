@@ -29,5 +29,5 @@ jobs:
           architecture: ${{ matrix.config.architecture }}
           run: |
             ssh user@localhost "pkgman update -y cmd:cmake cmd:make cmd:gcc cmd:as" &&
-            cmake -B build -S Source &&
+            cmake -B build -S . &&
             make -C build
