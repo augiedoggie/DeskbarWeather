@@ -436,7 +436,8 @@ SettingsWindow::_BuildFontMenu()
 				inStyle = true;
 			}
 
-			for (double k = 8.0; k < 16.5; k += 0.5) {
+			float baseSize = be_plain_font->Size();
+			for (double k = baseSize - 4; k < baseSize + 4.5; k += 0.5) {
 				BString itemStr;
 				itemStr.SetToFormat("%g", k);
 				BMessage* message = new BMessage(kFontMessage);

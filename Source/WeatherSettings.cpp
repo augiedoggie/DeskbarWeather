@@ -279,7 +279,7 @@ WeatherSettings::SetFont(BFont& font)
 status_t
 WeatherSettings::SetFont(const char* family, const char* style, double size)
 {
-	if (family == NULL || style == NULL || size < 8.0 || size > 16.0)
+	if (family == NULL || style == NULL)
 		return B_ERROR;
 
 	SetString(kFontFamilyKey, family);
