@@ -50,7 +50,11 @@ IpApiLocationProvider::Run(bool force)
 		}
 	}
 
-	BUrl url(kIpApiUrl);
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
+		BUrl url(kIpApiUrl, true);
+#else
+		BUrl url(kIpApiUrl);
+#endif
 	if (fUrlRequest == NULL)
 		fUrlRequest = BUrlProtocolRoster::MakeRequest(url, new BMallocIO(), new JsonRequestListener(fInvoker));
 	else if (fUrlRequest->IsRunning())

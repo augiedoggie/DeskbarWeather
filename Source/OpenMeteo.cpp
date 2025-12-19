@@ -77,7 +77,12 @@ OpenMeteo::RebuildRequestUrl(double latitude, double longitude, bool imperial)
 		needRefresh = true;
 	}
 
-	fApiUrl = new BUrl(urlStr);
+	fApiUrl =
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
+		new BUrl(urlStr, true);
+#else
+		new BUrl(urlStr);
+#endif
 
 	if (fUrlRequest == NULL)
 		fUrlRequest = BUrlProtocolRoster::MakeRequest(*fApiUrl, new BMallocIO(), new JsonRequestListener(fInvoker));
@@ -186,7 +191,12 @@ OpenMeteo::_ResetConditions()
 	delete fForecastList;
 
 	fCurrent = new Condition();
-	fForecastList = new BObjectList<Condition>(5, true);
+	fForecastList =
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
+		new BObjectList<Condition>(6);
+#else
+		new BObjectList<Condition>(6, true);
+#endif
 }
 
 
@@ -210,7 +220,12 @@ OpenMeteo::_ParseCurrent(BMessage& data)
 status_t
 OpenMeteo::_ParseForecast(BMessage& data)
 {
-	fForecastList = new BObjectList<Condition>(6, true);
+	fForecastList =
+#if B_HAIKU_VERSION > B_HAIKU_VERSION_1_BETA_5
+		new BObjectList<Condition>(6);
+#else
+		new BObjectList<Condition>(6, true);
+#endif
 
 	BMessage timeMessage, tempMinMessage, tempMaxMessage, codeMessage;
 	if (data.FindMessage("time", &timeMessage) != B_OK
