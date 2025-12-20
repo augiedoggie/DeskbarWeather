@@ -320,6 +320,11 @@ SettingsWindow::_RevertSettings()
 		needRefresh = true;
 	}
 
+	if (fSettings->ShowFeelsLike() != fSettingsCache->ShowFeelsLike()) {
+		fSettings->SetShowFeelsLike(fSettingsCache->ShowFeelsLike());
+		needRefresh = true;
+	}
+
 	// no need to refresh immediately for these
 	fSettings->SetUseNotification(fSettingsCache->UseNotification());
 	fSettings->SetNotificationClick(fSettingsCache->NotificationClick());
