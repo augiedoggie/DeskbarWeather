@@ -33,7 +33,7 @@ enum {
 
 SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRect frame)
 	:
-	BWindow(frame, "DeskbarWeather Preferences", B_FLOATING_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
+	BWindow(frame, "DeskbarWeather Preferences", B_TITLED_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
 		B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
 	fCompactBox(NULL),
 	fGeoNotificationBox(NULL),
