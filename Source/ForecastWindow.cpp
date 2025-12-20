@@ -136,66 +136,6 @@ ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* loca
 
 	otherGrid->AlignLayoutWith(tempGrid, B_VERTICAL);
 
-	BGroupView* forecastView = new BGroupView(B_HORIZONTAL, compact ? 0 : B_USE_DEFAULT_SPACING);
-	BLayoutBuilder::Group<> forecastBuilder = BLayoutBuilder::Group<>(forecastView);
-
-	BDateTimeFormat format;
-	format.SetDateTimeFormat(B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT, B_DATE_ELEMENT_WEEKDAY | B_DATE_ELEMENT_MONTH | B_DATE_ELEMENT_DAY);
-
-	BObjectList<Condition>* forecastList = weather->Forecast();
-	for (int32 i = 0; i < forecastList->CountItems(); i++) {
-		Condition* condition = forecastList->ItemAt(i);
-
-		BString dayString;
-		format.Format(dayString, condition->Day(), B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT);
-
-		BString lowString;
-		lowString << condition->iLow() << "°";
-
-		BString highString;
-		highString << condition->iHigh() << "°";
-
-		// clang-format off
-		forecastBuilder
-			.AddGroup(B_VERTICAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
-				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
-					.AddGlue()
-					.Add(new BStringView("DateString", dayString))
-					.AddGlue()
-				.End()
-				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
-					.AddGlue()
-					.Add(new BitmapView("ConditionBitmap", DeskbarWeatherView::LoadResourceBitmap(condition->Icon()->String(), compact ? 36 : 48)), 0)
-					.AddGlue()
-				.End()
-				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
-					.AddGlue()
-					.Add(new BStringView("ConditionString", condition->Forecast()->String()))
-					.AddGlue()
-				.End()
-				.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
-					.AddGlue()
-					.AddGrid(B_USE_HALF_ITEM_SPACING, 0.0)
-						.Add(_BuildStringView("HighLabel", "High:", B_ALIGN_RIGHT), 0, 0)
-						.Add(_BuildStringView("HighString", highString.String(), B_ALIGN_LEFT), 1, 0)
-						.Add(_BuildStringView("LowLabel", "Low:", B_ALIGN_RIGHT), 0, 1)
-						.Add(_BuildStringView("LowString", lowString.String(), B_ALIGN_LEFT), 1, 1)
-						.SetColumnWeight(0, 0)
-					.End()
-					.AddGlue()
-				.End()
-			.End();
-		// clang-format on
-
-		if (forecastList->ItemAt(i + 1) != NULL) {
-			BView* separatorView = new BView("SeparatorView", B_WILL_DRAW);
-			separatorView->SetExplicitSize(BSize(0, B_SIZE_UNSET));
-			separatorView->SetViewUIColor(B_PANEL_BACKGROUND_COLOR, B_DARKEN_1_TINT);
-			forecastBuilder.Add(separatorView);
-		}
-	}
-	forecastBuilder.SetInsets(compact ? 1 : B_USE_ITEM_INSETS);
-
 	BBox* currentBox = new BBox("CurrentBBox");
 	BString boxLabel("Current conditions updated: ");
 	BString dateStr;
@@ -204,14 +144,79 @@ ForecastWindow::ForecastWindow(OpenMeteo* weather, BRect frame, const char* loca
 	currentBox->SetLabel(boxLabel.String());
 	currentBox->AddChild(currentView);
 
-	BBox* forecastBox = new BBox("ForecastBBox");
-	forecastBox->SetLabel("Forecast");
-	forecastBox->AddChild(forecastView);
+	BLayoutBuilder::Group<> builder = BLayoutBuilder::Group<>(this, B_VERTICAL, compact ? 0 : B_USE_SMALL_SPACING)
+		.SetInsets(compact ? 1 : B_USE_HALF_ITEM_INSETS)
+		.Add(currentBox);
 
-	BLayoutBuilder::Group<>(this, B_VERTICAL, compact ? 0 : B_USE_SMALL_SPACING)
-		.Add(currentBox)
-		.Add(forecastBox)
-		.SetInsets(compact ? 1 : B_USE_HALF_ITEM_INSETS);
+	BObjectList<Condition>* forecastList = weather->Forecast();
+	// check if we need to bother with creating a forecast box at all
+	if (forecastList->CountItems() > 0) {
+		BGroupView* forecastView = new BGroupView(B_HORIZONTAL, compact ? 0 : B_USE_DEFAULT_SPACING);
+		BLayoutBuilder::Group<> forecastBuilder = BLayoutBuilder::Group<>(forecastView);
+
+		BDateTimeFormat format;
+		format.SetDateTimeFormat(B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT, B_DATE_ELEMENT_WEEKDAY | B_DATE_ELEMENT_MONTH | B_DATE_ELEMENT_DAY);
+
+		for (int32 i = 0; i < forecastList->CountItems(); i++) {
+			Condition* condition = forecastList->ItemAt(i);
+
+			BString dayString;
+			format.Format(dayString, condition->Day(), B_SHORT_DATE_FORMAT, B_SHORT_TIME_FORMAT);
+
+			BString lowString;
+			lowString << condition->iLow() << "°";
+
+			BString highString;
+			highString << condition->iHigh() << "°";
+
+			// clang-format off
+			forecastBuilder
+				.AddGroup(B_VERTICAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
+					.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
+						.AddGlue()
+						.Add(new BStringView("DateString", dayString))
+						.AddGlue()
+					.End()
+					.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
+						.AddGlue()
+						.Add(new BitmapView("ConditionBitmap", DeskbarWeatherView::LoadResourceBitmap(condition->Icon()->String(), compact ? 36 : 48)), 0)
+						.AddGlue()
+					.End()
+					.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
+						.AddGlue()
+						.Add(new BStringView("ConditionString", condition->Forecast()->String()))
+						.AddGlue()
+					.End()
+					.AddGroup(B_HORIZONTAL, compact ? B_USE_SMALL_SPACING : B_USE_DEFAULT_SPACING)
+						.AddGlue()
+						.AddGrid(B_USE_HALF_ITEM_SPACING, 0.0)
+							.Add(_BuildStringView("HighLabel", "High:", B_ALIGN_RIGHT), 0, 0)
+							.Add(_BuildStringView("HighString", highString.String(), B_ALIGN_LEFT), 1, 0)
+							.Add(_BuildStringView("LowLabel", "Low:", B_ALIGN_RIGHT), 0, 1)
+							.Add(_BuildStringView("LowString", lowString.String(), B_ALIGN_LEFT), 1, 1)
+							.SetColumnWeight(0, 0)
+							.SetColumnWeight(1, 0)
+						.End()
+						.AddGlue()
+					.End()
+				.End();
+			// clang-format on
+
+			if (forecastList->ItemAt(i + 1) != NULL) {
+				BView* separatorView = new BView("SeparatorView", B_WILL_DRAW);
+				separatorView->SetExplicitSize(BSize(0, B_SIZE_UNSET));
+				separatorView->SetViewUIColor(B_PANEL_BACKGROUND_COLOR, B_DARKEN_1_TINT);
+				forecastBuilder.Add(separatorView);
+			}
+		}
+		forecastBuilder.SetInsets(compact ? 1 : B_USE_ITEM_INSETS);
+
+		BBox* forecastBox = new BBox("ForecastBBox");
+		forecastBox->SetLabel("Forecast");
+		forecastBox->AddChild(forecastView);
+
+		builder.Add(forecastBox);
+	}
 
 	AddShortcut('W', B_COMMAND_KEY, new BMessage(B_QUIT_REQUESTED));
 

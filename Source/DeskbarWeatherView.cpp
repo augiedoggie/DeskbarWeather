@@ -147,7 +147,7 @@ DeskbarWeatherView::AttachedToWindow()
 
 	AutoLocker<WeatherSettings> slocker(fSettings);
 	fWeather = new OpenMeteo(fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits(),
-		new BInvoker(new BMessage(kRefreshMessage), this));
+		fSettings->ForecastDays(), new BInvoker(new BMessage(kRefreshMessage), this));
 
 	_CheckMessageRunner();
 
@@ -197,7 +197,7 @@ DeskbarWeatherView::MessageReceived(BMessage* message)
 			if (!message->HasBool("skiprefresh")) {
 				// something changed and we need a new location/weather request
 				//TODO check for geolocation status change
-				fWeather->RebuildRequestUrl(fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits());
+				fWeather->RebuildRequestUrl(fSettings->Latitude(), fSettings->Longitude(), fSettings->ImperialUnits(), fSettings->ForecastDays());
 				_CheckMessageRunner();
 			}
 

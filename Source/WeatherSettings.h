@@ -46,6 +46,8 @@ public:
 	bool		CompactForecast();
 	void		SetShowFeelsLike(bool enabled);
 	bool		ShowFeelsLike();
+	void		SetForecastDays(int32 days);
+	int32		ForecastDays();
 };
 
 #endif // _WEATHERSETTINGS_H_

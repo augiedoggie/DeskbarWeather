@@ -25,6 +25,7 @@ const char* kFontStyleKey = "dw:FontStyle";
 const char* kFontSizeKey = "dw:FontSize";
 const char* kCompactForecastKey = "dw:CompactForecast";
 const char* kShowFeelsLikeKey = "dw:ShowFeelsLike";
+const char* kForecastDaysKey = "dw:ForecastDays";
 
 const char* kDefaultLocation = "Rapa Nui";
 const double kDefaultLatitude = -27.116667;
@@ -38,6 +39,7 @@ const bool kNotificationClickDefault = false;
 const bool kUseGeoNotificationDefault = true;
 const bool kCompactForecastDefault = false;
 const bool kShowFeelsLikeDefault = false;
+const int32 kForecastDaysDefault = 7;
 
 
 WeatherSettings::WeatherSettings()
@@ -53,7 +55,7 @@ WeatherSettings::WeatherSettings(const WeatherSettings& settings)
 	BMessage(settings),
 	BLocker("weather settings lock")
 {
-	Load();
+	//Load();
 }
 
 
@@ -122,6 +124,20 @@ void
 WeatherSettings::SetShowFeelsLike(bool enabled)
 {
 	SetBool(kShowFeelsLikeKey, enabled);
+}
+
+
+int32
+WeatherSettings::ForecastDays()
+{
+	return GetInt32(kForecastDaysKey, kForecastDaysDefault);
+}
+
+
+void
+WeatherSettings::SetForecastDays(int32 days)
+{
+	SetInt32(kForecastDaysKey, days);
 }
 
 

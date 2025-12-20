@@ -40,6 +40,7 @@ private:
 	BCheckBox*			fGeoNotificationBox;
 	BRadioButton*		fImperialButton;
 	BMenuField*			fIntervalMenuField;
+	BMenuField*			fDaysMenuField;
 	BInvoker*			fInvoker;
 	BCheckBox*			fLocationBox;
 	BTextControl*		fLocationControl;

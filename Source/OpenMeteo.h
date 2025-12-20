@@ -28,11 +28,11 @@ using namespace BPrivate::Network;
 class OpenMeteo {
 public:
 
-						OpenMeteo(double latitude, double longitude, bool imperial, BInvoker* invoker);
+						OpenMeteo(double latitude, double longitude, bool imperial, int32 forecastDays, BInvoker* invoker);
 						~OpenMeteo();
 
 	status_t			Refresh();
-	void				RebuildRequestUrl(double latitude, double longitude, bool imperial);
+	void				RebuildRequestUrl(double latitude, double longitude, bool imperial, int32 forecastDays);
 	BInvoker*			Invoker();
 	Condition*			Current();
 	status_t			LastUpdate(BString& output, bool longFormat = false);
@@ -56,6 +56,7 @@ private:
 	BMessage*				fOpenMeteoMessage;
 	BUrlRequest*			fUrlRequest;
 	bool					fImperial;
+	int32					fForecastDays;
 };
 
 

@@ -27,7 +27,8 @@ enum {
 	kResetFontMessage				= 'GcRf',
 	kRevertButtonMessage			= 'GcRv',
 	kShowFeelsLikeCheckboxMessage	= 'DwFl',
-	kCompactCheckboxMessage			= 'DwCc'
+	kCompactCheckboxMessage			= 'DwCc',
+	kForecastDaysMessage			= 'DwFd'
 };
 
 
@@ -39,6 +40,7 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 	fGeoNotificationBox(NULL),
 	fImperialButton(NULL),
 	fIntervalMenuField(NULL),
+	fDaysMenuField(NULL),
 	fInvoker(invoker),
 	fLocationBox(NULL),
 	fLocationControl(NULL),
@@ -79,6 +81,17 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 
 	fShowForecastBox = new BCheckBox("ShowForecastCheckBox", "Clicking the notification opens the forecast", new BMessage(kShowForecastCheckboxMessage));
 
+	BPopUpMenu* forecastDaysMenu = new BPopUpMenu("ForecastDaysMenu");
+	BLayoutBuilder::Menu<> menuBuilder = BLayoutBuilder::Menu<>(forecastDaysMenu);
+	menuBuilder.AddItem("0 days (disabled)", kForecastDaysMessage);
+	// TODO fix ForecastWindow layout issues so we can set 1 or 2 days
+	for (int32 x = 3; x <= 16; x++) {
+		BString dayString;
+		dayString.SetToFormat("%i days", x);
+		menuBuilder.AddItem(dayString, kForecastDaysMessage);
+	}
+	fDaysMenuField = new BMenuField("DaysMenuField", "Forecast length:", forecastDaysMenu);
+
 	fCompactBox = new BCheckBox("CompactForecastBox", "Use compact forecast window", new BMessage(kCompactCheckboxMessage));
 
 	fShowFeelsLikeBox = new BCheckBox("ShowFeelsLikeBox", "Show \"Feels Like\" temperature in the Deskbar", new BMessage(kShowFeelsLikeCheckboxMessage));
@@ -109,8 +122,9 @@ SettingsWindow::SettingsWindow(WeatherSettings* settings, BInvoker* invoker, BRe
 			.End()
 			.AddMenuField(fontMenuField, 0, 7, B_ALIGN_RIGHT)
 			.Add(new BButton("ResetFontButton", "Reset font to default", new BMessage(kResetFontMessage)), 1, 8)
-			.Add(fCompactBox, 1, 9)
-			.Add(fShowFeelsLikeBox, 1, 10)
+			.AddMenuField(fDaysMenuField, 0, 9, B_ALIGN_RIGHT)
+			.Add(fCompactBox, 1, 10)
+			.Add(fShowFeelsLikeBox, 1, 11)
 		.End()
 		.Add(new BStringView("InfoStringView", "Changing font or units may require the app to be restarted to display properly"))
 		.AddGlue()
@@ -150,6 +164,17 @@ SettingsWindow::MessageReceived(BMessage* message)
 			AutoLocker<WeatherSettings> slocker(fSettings);
 			fSettings->SetRefreshInterval(message->what);
 			// wait to Invoke() until we close the window
+			break;
+		}
+		case kForecastDaysMessage:
+		{
+			AutoLocker<WeatherSettings> slocker(fSettings);
+			BString labelString(fDaysMenuField->Menu()->FindMarked()->Label());
+			int32 value = atol(labelString.Truncate(labelString.FindFirst(" ")));
+			if (fSettings->ForecastDays() != value)
+				fSettings->SetForecastDays(value);
+				// wait to Invoke() until we close the window
+
 			break;
 		}
 		case kCompactCheckboxMessage:
@@ -326,6 +351,7 @@ SettingsWindow::_RevertSettings()
 	}
 
 	// no need to refresh immediately for these
+	fSettings->SetForecastDays(fSettingsCache->ForecastDays());
 	fSettings->SetUseNotification(fSettingsCache->UseNotification());
 	fSettings->SetNotificationClick(fSettingsCache->NotificationClick());
 	fSettings->SetCompactForecast(fSettingsCache->CompactForecast());
@@ -367,6 +393,18 @@ SettingsWindow::_InitControls()
 
 	fShowFeelsLikeBox->SetValue(fSettings->ShowFeelsLike());
 
+	BMenu* daysMenu = fDaysMenuField->Menu();
+	for (int32 x = 0; x < daysMenu->CountItems(); x++) {
+		BMenuItem* menuItem = daysMenu->ItemAt(x);
+		BString itemString(menuItem->Label());
+		int32 itemValue = atol(itemString.Truncate(itemString.FindFirst(" ")));
+
+		if (itemValue == fSettings->ForecastDays()) {
+			menuItem->SetMarked(true);
+			break;
+		}
+	}
+
 	BMenu* intervalMenu = fIntervalMenuField->Menu();
 	BMenuItem* selectedItem = intervalMenu->FindItem(fSettings->RefreshInterval());
 	if (selectedItem != NULL)
@@ -379,19 +417,16 @@ SettingsWindow::_InitControls()
 void
 SettingsWindow::_SaveSettings()
 {
-	bool needRefresh = false;
-
 	//TODO a geolocation request might have changed our location name while the window was open (on first run)
 	//this should be enabled/fixed whenever manual location selection is implemented
+//	bool needRefresh = false;
 //	if (strcmp(fSettings->Location(), fLocationControl->Text()) != 0) {
 //		fSettings->SetLocation(fLocationControl->Text());
 //		needRefresh = true;
 //	}
 
-	if (fSettings->RefreshInterval() != fSettingsCache->RefreshInterval())
-		needRefresh = true;
-
-	if (needRefresh)
+	if (fSettings->ForecastDays() != fSettingsCache->ForecastDays()
+		|| fSettings->RefreshInterval() != fSettingsCache->RefreshInterval())
 		fInvoker->Invoke();
 }
 

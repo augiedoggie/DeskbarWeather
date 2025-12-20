@@ -21,11 +21,12 @@ const char* kOpenMeteoUrl =
 	"&wind_speed_unit=%s"
 	"&precipitation_unit=%s"
 	"&timeformat=unixtime"
+	"&forecast_days=%i"
 	"&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,cloud_cover,weathercode"
 	"&daily=temperature_2m_min,temperature_2m_max,weathercode";
 
 
-OpenMeteo::OpenMeteo(double latitude, double longitude, bool imperial, BInvoker* invoker)
+OpenMeteo::OpenMeteo(double latitude, double longitude, bool imperial, int32 forecastDays, BInvoker* invoker)
 	:
 	fCurrent(NULL),
 	fForecastList(NULL),
@@ -35,7 +36,7 @@ OpenMeteo::OpenMeteo(double latitude, double longitude, bool imperial, BInvoker*
 	fOpenMeteoMessage(new BMessage()),
 	fUrlRequest(NULL)
 {
-	RebuildRequestUrl(latitude, longitude, imperial);
+	RebuildRequestUrl(latitude, longitude, imperial, forecastDays);
 }
 
 
@@ -58,16 +59,18 @@ OpenMeteo::~OpenMeteo()
 
 
 void
-OpenMeteo::RebuildRequestUrl(double latitude, double longitude, bool imperial)
+OpenMeteo::RebuildRequestUrl(double latitude, double longitude, bool imperial, int32 forecastDays)
 {
 	fImperial = imperial;
+	fForecastDays = forecastDays;
 
 	//TODO check if latitude/longitude is set
 
 	bool needRefresh = false;
 	BString urlStr;
+	// always request at least one forecast day so we can get the high/low temperature for the current day
 	urlStr.SetToFormat(kOpenMeteoUrl, latitude, longitude,
-					   imperial ? "fahrenheit" : "celsius", imperial ? "mph" : "kmh", imperial ? "inch" : "mm");
+					   imperial ? "fahrenheit" : "celsius", imperial ? "mph" : "kmh", imperial ? "inch" : "mm", fForecastDays > 0 ? fForecastDays : 1);
 
 	if (fApiUrl != NULL) {
 		if (fApiUrl->UrlString() == urlStr)
@@ -236,6 +239,10 @@ OpenMeteo::_ParseForecast(BMessage& data)
 
 	fCurrent->SetLow(tempMinMessage.GetDouble("0", -99));
 	fCurrent->SetHigh(tempMaxMessage.GetDouble("0", -99));
+
+	// return now if we only needed the daily high/low
+	if (fForecastDays == 0)
+		return B_OK;
 
 	BString dayStr("0");
 	for (int32 idx = 0; timeMessage.HasDouble(dayStr); idx++) {
