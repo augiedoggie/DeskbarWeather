@@ -12,6 +12,7 @@
 #include <Alert.h>
 #include <Application.h>
 #include <Bitmap.h>
+#include <ControlLook.h>
 #include <Deskbar.h>
 #include <IconUtils.h>
 #include <Invoker.h>
@@ -327,7 +328,7 @@ DeskbarWeatherView::_Init()
 		}
 	}
 
-	fIcon = LoadResourceBitmap("unknown", Bounds().Height());
+	fIcon = LoadResourceBitmap("unknown", Bounds().Height(), false);
 
 	BFont font;
 	if (fSettings->GetFont(font) == B_OK)
@@ -478,7 +479,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	}
 
 	delete fIcon;
-	fIcon = LoadResourceBitmap(fWeather->Current()->Icon()->String(), Bounds().Height());
+	fIcon = LoadResourceBitmap(fWeather->Current()->Icon()->String(), Bounds().Height(), false);
 
 	BString updateStr;
 	fWeather->LastUpdate(updateStr);
@@ -644,9 +645,9 @@ DeskbarWeatherView::_OpenUserGuide()
 
 
 BBitmap*
-DeskbarWeatherView::LoadResourceBitmap(const char* name, int32 size)
+DeskbarWeatherView::LoadResourceBitmap(const char* name, int32 size, bool autoScale)
 {
-	BBitmap* bitmap = new BBitmap(BRect(0, 0, size, size), B_RGBA32);
+	BBitmap* bitmap = new BBitmap(BRect(BPoint(0, 0), autoScale ? be_control_look->ComposeIconSize(size) : BSize(size, size)), B_RGBA32);
 	if (bitmap == NULL)
 		return NULL;
 

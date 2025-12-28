@@ -57,7 +57,7 @@ public:
 	virtual	void		MouseDown(BPoint point);
 	virtual	void		MessageReceived(BMessage* message);
 
-	static	BBitmap*	LoadResourceBitmap(const char* name, int32 size);
+	static	BBitmap*	LoadResourceBitmap(const char* name, int32 size, bool autoScale = true);
 
 private:
 			void		_AboutRequested();
