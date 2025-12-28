@@ -647,7 +647,7 @@ DeskbarWeatherView::_OpenUserGuide()
 BBitmap*
 DeskbarWeatherView::LoadResourceBitmap(const char* name, int32 size, bool autoScale)
 {
-	BBitmap* bitmap = new BBitmap(BRect(BPoint(0, 0), autoScale ? be_control_look->ComposeIconSize(size) : BSize(size, size)), B_RGBA32);
+	BBitmap* bitmap = new BBitmap(BRect(BPoint(0, 0), autoScale ? be_control_look->ComposeIconSize(size) : BSize(size - 1, size - 1)), B_RGBA32);
 	if (bitmap == NULL)
 		return NULL;
 
