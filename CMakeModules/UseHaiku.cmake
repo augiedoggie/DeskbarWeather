@@ -10,10 +10,24 @@
 
 
 #
+#	Locate a required Haiku tool and fail clearly at configure time if it's missing
+#
+function(haiku_require_program OUTVAR NAME)
+
+	find_program("${OUTVAR}" NAMES "${NAME}")
+	if(NOT ${OUTVAR})
+		message(FATAL_ERROR "Required Haiku tool '${NAME}' was not found.")
+	endif()
+
+endfunction()
+
+
+#
 #	Use the standard non-packaged directory if no prefix was given to cmake
 #
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	execute_process(COMMAND finddir B_USER_NONPACKAGED_DIRECTORY OUTPUT_VARIABLE B_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
+	haiku_require_program(HAIKU_FINDDIR_PROGRAM "finddir")
+	execute_process(COMMAND "${HAIKU_FINDDIR_PROGRAM}" B_USER_NONPACKAGED_DIRECTORY OUTPUT_VARIABLE B_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(CMAKE_INSTALL_PREFIX "${B_PREFIX}" CACHE PATH "Default non-packaged install path" FORCE)
 endif()
 
@@ -44,7 +58,7 @@ if(HAIKU_ENABLE_I18N)
 	  COMMAND "${CMAKE_COMMAND}" "-DCMAKE_INSTALL_COMPONENT=locales" "-P" "${CMAKE_BINARY_DIR}/cmake_install.cmake"
 	)
 
-	if (NOT DEFINED CMAKE_INSTALL_LOCALEDIR)
+	if(NOT DEFINED CMAKE_INSTALL_LOCALEDIR)
 		set(CMAKE_INSTALL_LOCALEDIR "data/locale")
 	endif()
 
@@ -52,30 +66,39 @@ endif()
 
 
 #
-#	Convenience function to create an app with rdef/rsrc files
+#	Split a source list into real sources, .rdef files, and precompiled .rsrc files
 #
-function(haiku_add_executable TARGET)
+function(haiku_split_sources OUT_SOURCES OUT_RDEFS OUT_RSRCS)
 
 	foreach(arg ${ARGN})
-		if (${arg} MATCHES ".*rdef$")
+		if(${arg} MATCHES "\\.rdef$")
 			list(APPEND rdeflist ${arg})
-		elseif(${arg} MATCHES ".*rsrc$")
+		elseif(${arg} MATCHES "\\.rsrc$")
 			list(APPEND rsrclist "${CMAKE_CURRENT_SOURCE_DIR}/${arg}")
 		else()
-			list(APPEND REAL_SOURCES ${arg})
+			list(APPEND sourcelist ${arg})
 		endif()
 	endforeach()
 
-	# Call the original function with the filtered source list.
-	add_executable(${TARGET} ${REAL_SOURCES})
+	set("${OUT_SOURCES}" "${sourcelist}" PARENT_SCOPE)
+	set("${OUT_RDEFS}" "${rdeflist}" PARENT_SCOPE)
+	set("${OUT_RSRCS}" "${rsrclist}" PARENT_SCOPE)
 
-	# rdef/rsrc targets must be added after the main target has been created with _add_executable()
-	foreach(rdef ${rdeflist})
+endfunction()
+
+
+#
+#	Add rdef/rsrc resources to an already created target and finish it off with mimeset
+#
+function(haiku_finish_resource_target TARGET RDEFS RSRCS)
+
+	# rdef/rsrc targets must be added after the main target has been created with add_executable()/add_library()
+	foreach(rdef ${RDEFS})
 		haiku_add_resource_def(${TARGET} ${rdef})
 	endforeach()
 
 	# any precompiled resources that were given to us
-	foreach(rsrc ${rsrclist})
+	foreach(rsrc ${RSRCS})
 		haiku_add_resource(${TARGET} ${rsrc})
 	endforeach()
 
@@ -85,19 +108,26 @@ endfunction()
 
 
 #
+#	Convenience function to create an app with rdef/rsrc files
+#
+function(haiku_add_executable TARGET)
+
+	haiku_split_sources(REAL_SOURCES RDEFLIST RSRCLIST ${ARGN})
+
+	# Call the original function with the filtered source list.
+	add_executable(${TARGET} ${REAL_SOURCES})
+
+	haiku_finish_resource_target(${TARGET} "${RDEFLIST}" "${RSRCLIST}")
+
+endfunction()
+
+
+#
 #	Convenience function to create a shared object with rdef/rsrc files and no lib prefix or .so suffix
 #
 function(haiku_add_addon TARGET)
 
-	foreach(arg ${ARGN})
-		if (${arg} MATCHES ".*rdef$")
-			list(APPEND rdeflist ${arg})
-		elseif(${arg} MATCHES ".*rsrc$")
-			list(APPEND rsrclist "${CMAKE_CURRENT_SOURCE_DIR}/${arg}")
-		else()
-			list(APPEND REAL_SOURCES ${arg})
-		endif()
-	endforeach()
+	haiku_split_sources(REAL_SOURCES RDEFLIST RSRCLIST ${ARGN})
 
 	# Call the original function with the filtered source list.
 	add_library(${TARGET} MODULE ${REAL_SOURCES})
@@ -107,17 +137,7 @@ function(haiku_add_addon TARGET)
 		PREFIX ""
 		SUFFIX "")
 
-	# rdef/rsrc targets must be added after the main target has been created with _add_executable()
-	foreach(rdef ${rdeflist})
-		haiku_add_resource_def(${TARGET} ${rdef})
-	endforeach()
-
-	# any precompiled resources that were given to us
-	foreach(rsrc ${rsrclist})
-		haiku_add_resource(${TARGET} ${rsrc})
-	endforeach()
-
-	haiku_mimeset_target(${TARGET})
+	haiku_finish_resource_target(${TARGET} "${RDEFLIST}" "${RSRCLIST}")
 
 endfunction()
 
@@ -128,8 +148,7 @@ endfunction()
 function(haiku_add_i18n TARGET)
 
 	if(NOT DEFINED "${TARGET}-APP_MIME_SIG")
-		message(WARNING "No APP_MIME_SIG property for ${TARGET}. Using 'application/x-vnd.Foo-Bar'")
-		set("${TARGET}-APP_MIME_SIG" "application/x-vnd.Foo-Bar")
+		message(FATAL_ERROR "No APP_MIME_SIG property set for ${TARGET}. Set ${TARGET}-APP_MIME_SIG before calling haiku_add_i18n().")
 	endif()
 
 	if(NOT DEFINED "${TARGET}-LOCALES")
@@ -152,12 +171,13 @@ endfunction()
 #
 function(haiku_add_resource TARGET RSRC)
 
+	haiku_require_program(HAIKU_XRES_PROGRAM "xres")
 	get_filename_component(shortname ${RSRC} NAME)
 
 	add_custom_command(
 		TARGET ${TARGET}
 		POST_BUILD
-		COMMAND "xres" "-o" "$<TARGET_FILE:${TARGET}>" "${RSRC}"
+		COMMAND "${HAIKU_XRES_PROGRAM}" "-o" "$<TARGET_FILE:${TARGET}>" "${RSRC}"
 		COMMENT "Merging resources from ${shortname} into ${TARGET}")
 
 endfunction()
@@ -168,17 +188,19 @@ endfunction()
 #
 function(haiku_mimeset_target TARGET)
 
+	haiku_require_program(HAIKU_MIMESET_PROGRAM "mimeset")
+
 	add_custom_command(
 		TARGET ${TARGET}
 		POST_BUILD
-		COMMAND "mimeset" "-f" "$<TARGET_FILE:${TARGET}>"
+		COMMAND "${HAIKU_MIMESET_PROGRAM}" "-f" "$<TARGET_FILE:${TARGET}>"
 		COMMENT "Setting mimetype for ${TARGET}")
 
 endfunction()
 
 
 #
-#	Compile a resource definition file(.rdef) to a resource file(.rsrc)
+#	Compile a resource definition file(.rdef) and add the result to a target
 #
 function(haiku_add_resource_def TARGET RDEF_SOURCE)
 
@@ -190,14 +212,8 @@ function(haiku_add_resource_def TARGET RDEF_SOURCE)
 
 	haiku_add_resource(${TARGET} ${RSRC_OUT})
 
-	# somewhat ugly hack to avoid generating a dependency on the target
-	# like the regular $<TARGET_FILE> generator does
-	set(TARGET_PATH "$<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_NAME:${TARGET}>")
-	# remove the target(exe/lib) and force it to be rebuilt
-	add_custom_command(
-		OUTPUT "${RSRC_OUT}"
-		COMMAND "${CMAKE_COMMAND}" "-E" "remove" "-f" "${TARGET_PATH}"
-		APPEND)
+	# ensure the target is relinked whenever the compiled .rsrc changes
+	set_property(TARGET ${TARGET} APPEND PROPERTY LINK_DEPENDS "${RSRC_OUT}")
 
 endfunction()
 
@@ -207,6 +223,7 @@ endfunction()
 #
 function(haiku_compile_resource_def RDEF_SOURCE RSRC_OUT)
 
+	haiku_require_program(HAIKU_RC_PROGRAM "rc")
 	get_filename_component(shortname ${RDEF_SOURCE} NAME)
 	get_filename_component(rdefpath ${RDEF_SOURCE} ABSOLUTE)
 	get_filename_component(basename ${RDEF_SOURCE} NAME_WE)
@@ -216,7 +233,11 @@ function(haiku_compile_resource_def RDEF_SOURCE RSRC_OUT)
 
 	add_custom_command(
 		OUTPUT "${rsrcdir}/${rsrcfile}"
-		COMMAND "rc" "-o" "${rsrcfile}" "${rdefpath}"
+		COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${rsrcdir}"
+		COMMAND "${HAIKU_RC_PROGRAM}" "-o" "${rsrcfile}" "${rdefpath}"
+		# avoid an extra relink under ninja by back-dating the .rsrc to the .rdef's mtime
+		# (other inputs, e.g. sources, can still trigger one harmless extra relink pass on Haiku)
+		COMMAND "touch" "-r" "${rdefpath}" "${rsrcfile}"
 		DEPENDS ${rdefpath}
 		WORKING_DIRECTORY ${rsrcdir}
 		COMMENT "Compiling resource definition ${shortname}")
@@ -235,11 +256,17 @@ endfunction()
 #
 function(haiku_add_target_attr TARGET ANAME AVALUE)
 
+	if(NOT HAIKU_ENABLE_TARGET_ATTRS)
+		return()
+	endif()
+
+	haiku_require_program(HAIKU_ADDATTR_PROGRAM "addattr")
+
 	#TODO allow overriding the working diretory
 	add_custom_command(
 		TARGET ${TARGET}
 		POST_BUILD
-		COMMAND sh -c "addattr -t string \"${ANAME}\" \"${AVALUE}\" '$<TARGET_FILE:${TARGET}>'"
+		COMMAND "${HAIKU_ADDATTR_PROGRAM}" "-t" "string" "${ANAME}" "${AVALUE}" "$<TARGET_FILE:${TARGET}>"
 		WORKING_DIRECTORY $<TARGET_PROPERTY:${TARGET},SOURCE_DIR>
 		VERBATIM
 		COMMENT "Adding ${ANAME} BFS attribute to ${TARGET}")
@@ -252,19 +279,20 @@ endfunction()
 #
 function(haiku_generate_base_catkeys TARGET)
 
+	haiku_require_program(HAIKU_COLLECTCATKEYS_PROGRAM "collectcatkeys")
 	haiku_get_app_mime_subtype("${${TARGET}-APP_MIME_SIG}" SUBTYPE)
 
 	add_custom_target(
 		"${TARGET}-generate-en.catkeys"
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/locales
-		COMMAND sh -c "${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS} -I$<JOIN:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>, -I> -DB_COLLECTING_CATKEYS -DHAIKU_ENABLE_I18N -E ${CMAKE_CURRENT_SOURCE_DIR}/$<JOIN:$<TARGET_PROPERTY:${TARGET},SOURCES>, ${CMAKE_CURRENT_SOURCE_DIR}/> >${TARGET}.cpp.i"
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/locales/${TARGET}
+		COMMAND sh -c "${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS} $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:-I$<JOIN:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>, -I>> -DB_COLLECTING_CATKEYS -DHAIKU_ENABLE_I18N -E ${CMAKE_CURRENT_SOURCE_DIR}/$<JOIN:$<TARGET_PROPERTY:${TARGET},SOURCES>, ${CMAKE_CURRENT_SOURCE_DIR}/> >${TARGET}.cpp.i"
 		COMMAND sh -c "grep -av '^#' ${TARGET}.cpp.i >${TARGET}.cpp.ck"
-		COMMAND collectcatkeys -pvw -s ${SUBTYPE} -o $<TARGET_PROPERTY:${TARGET},SOURCE_DIR>/locales/en.catkeys ${TARGET}.cpp.ck
+		COMMAND "${HAIKU_COLLECTCATKEYS_PROGRAM}" -pvw -s ${SUBTYPE} -o $<TARGET_PROPERTY:${TARGET},SOURCE_DIR>/locales/${TARGET}/en.catkeys ${TARGET}.cpp.ck
 		COMMAND ${CMAKE_COMMAND} -E rm ${TARGET}.cpp.i ${TARGET}.cpp.ck
 		DEPENDS $<TARGET_PROPERTY:${TARGET},SOURCES>
 		VERBATIM
 		COMMAND_EXPAND_LISTS
-		COMMENT "Generating locales/en.catkeys for ${TARGET}")
+		COMMENT "Generating locales/${TARGET}/en.catkeys for ${TARGET}")
 
 	add_dependencies("catkeys" "${TARGET}-generate-en.catkeys")
 
@@ -276,6 +304,7 @@ endfunction()
 #
 function(haiku_compile_catalogs TARGET)
 
+	haiku_require_program(HAIKU_LINKCATKEYS_PROGRAM "linkcatkeys")
 	haiku_get_app_mime_subtype("${${TARGET}-APP_MIME_SIG}" SUBTYPE)
 
 	if(DEFINED HAIKU_CATALOG_BUILD_DIR)
@@ -286,12 +315,12 @@ function(haiku_compile_catalogs TARGET)
 
 	foreach(lang ${ARGN})
 		set(catalogoutput "${catalogspath}/${lang}.catalog")
-		set(catkeyspath "${CMAKE_CURRENT_SOURCE_DIR}/locales/${lang}.catkeys")
+		set(catkeyspath "${CMAKE_CURRENT_SOURCE_DIR}/locales/${TARGET}/${lang}.catkeys")
 
 		add_custom_command(
 			OUTPUT ${catalogoutput}
 			COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${catalogspath}"
-			COMMAND "linkcatkeys" "-o" "${catalogoutput}" "-s" "${${TARGET}-APP_MIME_SIG}" "-l" "${lang}" "${catkeyspath}"
+			COMMAND "${HAIKU_LINKCATKEYS_PROGRAM}" "-o" "${catalogoutput}" "-s" "${${TARGET}-APP_MIME_SIG}" "-l" "${lang}" "${catkeyspath}"
 			DEPENDS ${catkeyspath}
 			COMMENT "Compiling ${lang}.catalog for ${TARGET}")
 
@@ -307,12 +336,14 @@ endfunction()
 #
 function(haiku_bind_catalogs TARGET)
 
+	haiku_require_program(HAIKU_LINKCATKEYS_PROGRAM "linkcatkeys")
+
 	foreach(lang ${ARGN})
-		set(catkeyspath "${CMAKE_CURRENT_SOURCE_DIR}/locales/${lang}.catkeys")
+		set(catkeyspath "${CMAKE_CURRENT_SOURCE_DIR}/locales/${TARGET}/${lang}.catkeys")
 
 		add_custom_target(
 			"${TARGET}-bind-${lang}.catalog"
-			COMMAND "linkcatkeys" "-o" "$<TARGET_FILE:${TARGET}>" "-s" "${${TARGET}-APP_MIME_SIG}" "-tr" "-l" "${lang}" "${catkeyspath}"
+			COMMAND "${HAIKU_LINKCATKEYS_PROGRAM}" "-o" "$<TARGET_FILE:${TARGET}>" "-s" "${${TARGET}-APP_MIME_SIG}" "-tr" "-l" "${lang}" "${catkeyspath}"
 			DEPENDS ${catkeyspath} ${TARGET}
 			COMMENT "Binding ${lang}.catalog to ${TARGET}")
 
@@ -352,14 +383,14 @@ function(haiku_get_app_mime_subtype APP_MIME_SIG OUTVAR)
 
 	# ensure that we have a shortened mimetype without the application/ prefix
 	# find the last / and split the mime string
-	string(FIND "${${TARGET}-APP_MIME_SIG}" "/" SUBPOS REVERSE)
+	string(FIND "${APP_MIME_SIG}" "/" SUBPOS REVERSE)
 	if("${SUBPOS}" EQUAL "-1")
-		set("${OUTVAR}" "${${TARGET}-APP_MIME_SIG}" PARENT_SCOPE)
+		set("${OUTVAR}" "${APP_MIME_SIG}" PARENT_SCOPE)
 		return()
 	endif()
 
 	math(EXPR SUBPOS "${SUBPOS}+1")
-	string(SUBSTRING "${${TARGET}-APP_MIME_SIG}" "${SUBPOS}+1" "-1" SUBTYPE)
+	string(SUBSTRING "${APP_MIME_SIG}" "${SUBPOS}" "-1" SUBTYPE)
 	set("${OUTVAR}" "${SUBTYPE}" PARENT_SCOPE)
 
 endfunction()
