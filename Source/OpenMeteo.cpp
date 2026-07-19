@@ -13,7 +13,7 @@
 #include <private/netservices/UrlRequest.h>
 
 
-const char* kOpenMeteoUrl = 
+const char* kOpenMeteoUrl =
 	"https://api.open-meteo.com/v1/forecast"
 	"?latitude=%f&longitude=%f"
 	"&timezone=auto"
@@ -87,9 +87,10 @@ OpenMeteo::RebuildRequestUrl(double latitude, double longitude, bool imperial, i
 		new BUrl(urlStr);
 #endif
 
-	if (fUrlRequest == NULL)
+	if (fUrlRequest == NULL) {
 		fUrlRequest = BUrlProtocolRoster::MakeRequest(*fApiUrl, new BMallocIO(), new JsonRequestListener(fInvoker));
-	else
+		fUrlRequest->SetTimeout(5*60000); // 5 minutes
+	} else
 		fUrlRequest->SetUrl(*fApiUrl);
 
 	if (needRefresh)
@@ -100,8 +101,9 @@ OpenMeteo::RebuildRequestUrl(double latitude, double longitude, bool imperial, i
 status_t
 OpenMeteo::Refresh()
 {
-	if (fUrlRequest->IsRunning())
-		return B_ERROR; //TODO stop and restart?
+//	if (fUrlRequest->IsRunning())
+//		if (fUrlRequest->Stop() != B_OK)
+//			return B_ERROR;
 
 	return fUrlRequest->Run() < B_OK ? B_ERROR : B_OK;
 }
