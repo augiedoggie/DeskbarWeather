@@ -26,6 +26,7 @@ haiku_add_executable(DeskbarWeather
 	OpenMeteo.cpp
 	SettingsWindow.cpp
 	WeatherSettings.cpp
+	WeatherToolTip.cpp
 )
 
 target_link_libraries(DeskbarWeather be netservices bnetapi shared)

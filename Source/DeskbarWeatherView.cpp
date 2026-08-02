@@ -8,6 +8,7 @@
 #include "OpenMeteo.h"
 #include "SettingsWindow.h"
 #include "WeatherSettings.h"
+#include "WeatherToolTip.h"
 
 #include <Alert.h>
 #include <Application.h>
@@ -481,22 +482,7 @@ DeskbarWeatherView::_RefreshComplete(BMessage* message)
 	delete fIcon;
 	fIcon = LoadResourceBitmap(fWeather->Current()->Icon()->String(), Bounds().Height(), false);
 
-	BString updateStr;
-	fWeather->LastUpdate(updateStr);
-	//TODO configurable tooltip information
-	BString tooltip;
-	tooltip << fSettings->Location() << "\n";
-	tooltip << fWeather->Current()->Forecast()->String() << "\n";
-	// if we're showing "Feels Like" in the Deskbar then show actual temp in the tooltip
-	if (fSettings->ShowFeelsLike())
-		tooltip << "Current: " << fWeather->Current()->Temp() << "°\n";
-	else
-		tooltip << "Feels Like: " << fWeather->Current()->Temp(true) << "°\n";
-
-	tooltip << "High: " << fWeather->Current()->iHigh() << "°\n";
-	tooltip << "Low: " << fWeather->Current()->iLow() << "°\n";
-	tooltip << "Updated: " << updateStr;
-	SetToolTip(tooltip);
+	SetToolTip(new WeatherToolTip(fSettings, fWeather));
 
 	Invalidate();
 }
